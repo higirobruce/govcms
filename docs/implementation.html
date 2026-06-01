@@ -337,7 +337,7 @@
         <ul class="mt-0" style="margin-bottom:0;">
           <li>Accessibility (WCAG 2.2 AA) enforced — can't publish inaccessible pages</li>
           <li>Multi-tenancy at national scale, central patching</li>
-          <li>A government design system = the national web identity</li>
+          <li>A government <em>delivery</em> design system = the national web identity (distinct from the CMS's own product UI — see below)</li>
           <li>Multilingual as a core data concept (rw / en / fr / sw)</li>
           <li>Workflow, approvals, immutable audit trail, records retention</li>
           <li>Data sovereignty — runs on local/government infrastructure</li>
@@ -346,6 +346,21 @@
       <div class="card">
         <h4 class="mt-0">What is deliberately commodity</h4>
         <p>The generic "CMS engine on a modern stack" is not the moat — modern headless CMSes already exist. Our value is the <strong>government layer</strong> above. We keep the engine small and conventional so effort concentrates where governments actually differ.</p>
+      </div>
+    </div>
+
+    <h3>Two design systems, two rulebooks</h3>
+    <p>The RISA guideline governs the <em>output</em> (citizen-facing sites), not the <em>tool</em> (the CMS itself). So govcms has two distinct design systems that share low-level primitives (shadcn/ui, Tailwind) but diverge entirely at the token and component level.</p>
+    <div class="grid grid-2">
+      <div class="card" style="border-color:var(--indigo-soft); background:linear-gradient(180deg,var(--indigo-soft),#fff 60%);">
+        <div class="card-eyebrow" style="color:var(--indigo);">packages/admin-ui</div>
+        <h4>Product design system</h4>
+        <p>The CMS interface used by editors, reviewers and admins (<code>apps/admin</code>). <strong>govcms's own brand</strong> — a modern, productive SaaS feel. Free to diverge from gov guidelines; optimized for clarity and speed. A delightful editor is itself an adoption lever against TYPO3.</p>
+      </div>
+      <div class="card" style="border-color:var(--azure-soft); background:linear-gradient(180deg,var(--highlight),#fff 60%);">
+        <div class="card-eyebrow" style="color:var(--azure-deep);">packages/design-system</div>
+        <h4>Government delivery system</h4>
+        <p>The national identity rendered on public sites (<code>apps/site</code>) — Coat of Arms, official palette, imigongo. <strong>RISA guideline is binding</strong>; conformance (AA contrast, mandatory alt text, approved palette only) is enforced structurally, not left to editors.</p>
       </div>
     </div>
   </section>
@@ -391,14 +406,15 @@ AuditLog       id, tenant_id, actor, action, target, before/after, ts</code></pr
   <section class="section" id="repo">
     <p class="eyebrow">06</p>
     <h2 class="mt-0">Repository structure</h2>
-    <p>Monorepo, matching how the <code>aux</code> project is already organized.</p>
+    <p>A standard pnpm + Turborepo monorepo. Note the two separate design-system packages (see §03).</p>
 <pre><code>govcms/
 ├── apps/
 │   ├── core/          NestJS — API, RBAC, workflow, plugin host
-│   ├── admin/         React + shadcn/ui + Tailwind — editor
-│   └── site/          Next.js — public SSG/ISR delivery (the pilot)
+│   ├── admin/         React + Vite — the CMS editor (uses admin-ui)
+│   └── site/          Next.js — public SSG/ISR delivery (uses design-system)
 ├── packages/
-│   ├── design-system/ gov component library (the national identity)
+│   ├── admin-ui/      product design system — govcms's own brand (apps/admin)
+│   ├── design-system/ government delivery system — RISA-conformant (apps/site)
 │   ├── content-sdk/   typed client the site uses to fetch content
 │   ├── schema/        shared types + zod validators
 │   └── plugin-api/    the contract plugins implement
