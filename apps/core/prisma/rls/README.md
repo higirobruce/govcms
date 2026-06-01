@@ -1,36 +1,40 @@
-# Row-Level Security (DB-layer tenant isolation)
+# Row-Level Security (DB-layer tenant isolation) — ENABLED
 
-`enable-rls.sql` is a **drafted, reviewed** policy set. It is **not** applied
-automatically, and must not be enabled until the app threads tenant context
-through **every** query path — otherwise published-site reads and the
-cross-tenant workspace picker break (policies fail closed).
+RLS is wired and enforced. `enable-rls.sql` is applied as a migration, and the
+app connects as a **non-superuser role** so the policies actually bite.
 
-## Why it isn't on yet
+## How it works
 
-RLS requires the database session to know the current tenant/user:
+- **Policies** (`enable-rls.sql`): `ENABLE` + `FORCE` RLS on tenant-scoped tables;
+  `USING`/`WITH CHECK` against `current_setting('app.tenant_id'|'app.user_id', true)`.
+  Membership also allows the current user (cross-tenant workspace picker).
+  Versions/workflow are scoped transitively via `Entry`.
+- **App role** (`*_app_role` migration): `govcms_app` — non-superuser, non-owner,
+  with DML grants. **Critical:** superusers (and the table owner under non-FORCE)
+  bypass RLS, so the app must NOT connect as the owner.
+  - App runtime → `DATABASE_URL` = `govcms_app`.
+  - Migrations + seed → owner role (the `db:migrate` / `db:seed` scripts set it).
+- **Context** (`tenant-context.ts` + `prisma.service.ts`): an `AsyncLocalStorage`
+  holds `{ tenantId, userId }`. The `db` client extension wraps each standalone
+  model op in a transaction that `set_config`s the GUCs; `tenantTx` does the same
+  for interactive transactions. Context is set by `TenantContextInterceptor`
+  (per request), `TenantGuard` (its membership lookup), and `PublicService`.
 
-```sql
-SELECT set_config('app.tenant_id', '<tenantId>', true);
-SELECT set_config('app.user_id',   '<userId>', true);
-```
+## Gotcha that bit us (keep it fixed)
 
-With Prisma + a pooled connection, the only correct way to scope these to a
-single request is to run the request's queries **inside one interactive
-transaction** that sets the GUCs first (`is_local = true` ties them to the tx).
-That means a deliberate change to how the services obtain their Prisma handle
-(a request-scoped transactional client), not a drop-in.
+`withTenant` must **await inside** `tenantStore.run(...)`. If it returns the
+Prisma promise and the caller awaits it after `run()` exits, async_hooks has
+already lost the context when Prisma dispatches the query → policies fail closed
+(spurious 403 / empty results).
 
-## Wiring plan (the focused follow-up)
+## Verified
 
-1. `AsyncLocalStorage` tenant context, populated by an interceptor that runs
-   after `TenantGuard` (so `req.user` + `req.tenantId` exist), and by
-   `PublicService`/`AuthService` for their paths.
-2. A request-scoped Prisma accessor that opens an interactive transaction,
-   `set_config(...)` for tenant + user, and runs the handler's queries on it.
-3. Apply `enable-rls.sql` as a migration.
-4. Verify: create tenants A and B; confirm a session scoped to A cannot read
-   B's entries even via `prisma.$queryRaw`; confirm login, `/tenants`, and the
-   public site still work.
+As `govcms_app`: no context → 0 rows (fail-closed); correct tenant → scoped rows;
+wrong tenant → 0. App flows (login, tenants, entries, workflow, public site) all
+work; guard 403s non-members.
 
-Until then, isolation is enforced at the **app layer** (`TenantGuard` + every
-query filtered by `tenantId`), which is real but is a single layer.
+## Production note
+
+The `docker-compose.prod.yml` / Dockerfile currently connect as the superuser
+(`govcms`) for simplicity — **that bypasses RLS**. Before production, split prod
+the same way: migrate/seed as owner, run the API as `govcms_app`.

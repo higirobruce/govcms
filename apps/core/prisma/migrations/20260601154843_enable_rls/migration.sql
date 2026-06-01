@@ -1,7 +1,6 @@
 -- ============================================================================
 -- govcms — Row-Level Security (the DB-layer half of tenant isolation).
--- APPLIED as a migration + wired (see ./README.md). The app connects as the
--- non-superuser govcms_app role so these policies are enforced.
+-- DRAFT / NOT auto-applied. See ./README.md before enabling.
 --
 -- The app layer (TenantGuard + every query filtered by tenantId) is the first
 -- line of defense. RLS is defense-in-depth: even a bug or a raw query cannot

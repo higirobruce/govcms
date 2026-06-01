@@ -18,7 +18,7 @@ export class AuthService {
   ) {}
 
   async register(input: RegisterInput) {
-    const existing = await this.prisma.user.findUnique({
+    const existing = await this.prisma.db.user.findUnique({
       where: { email: input.email },
     });
     if (existing) {
@@ -26,14 +26,14 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
-    const user = await this.prisma.user.create({
+    const user = await this.prisma.db.user.create({
       data: { email: input.email, name: input.name, passwordHash },
     });
     return this.sign(user.id, user.email, user.name);
   }
 
   async login(input: LoginInput) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.db.user.findUnique({
       where: { email: input.email },
     });
     // Same error whether the user is missing or the password is wrong.
@@ -44,7 +44,7 @@ export class AuthService {
   }
 
   async me(userId: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.db.user.findUnique({
       where: { id: userId },
       include: {
         memberships: {

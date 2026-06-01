@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { withTenant } from "../prisma/tenant-context";
 
 /**
  * Anonymous, read-only delivery API. Serves ONLY published content, keyed by
@@ -12,13 +13,13 @@ export class PublicService {
   constructor(private readonly prisma: PrismaService) {}
 
   private async tenantId(slug: string): Promise<string> {
-    const t = await this.prisma.tenant.findUnique({ where: { slug }, select: { id: true } });
+    const t = await this.prisma.db.tenant.findUnique({ where: { slug }, select: { id: true } });
     if (!t) throw new NotFoundException(`Unknown site "${slug}".`);
     return t.id;
   }
 
   async site(slug: string) {
-    const tenant = await this.prisma.tenant.findUnique({
+    const tenant = await this.prisma.db.tenant.findUnique({
       where: { slug },
       select: { name: true, slug: true, locales: true, defaultLocale: true },
     });
@@ -28,33 +29,37 @@ export class PublicService {
 
   async list(slug: string, opts: { type?: string; locale?: string }) {
     const tenantId = await this.tenantId(slug);
-    const entries = await this.prisma.entry.findMany({
-      where: {
-        tenantId,
-        status: "PUBLISHED",
-        locale: opts.locale,
-        publishedVersionId: { not: null },
-        contentType: opts.type ? { key: opts.type } : undefined,
-      },
-      include: { publishedVersion: true, contentType: { select: { key: true } } },
-      orderBy: { updatedAt: "desc" },
-    });
+    const entries = await withTenant({ tenantId }, () =>
+      this.prisma.db.entry.findMany({
+        where: {
+          tenantId,
+          status: "PUBLISHED",
+          locale: opts.locale,
+          publishedVersionId: { not: null },
+          contentType: opts.type ? { key: opts.type } : undefined,
+        },
+        include: { publishedVersion: true, contentType: { select: { key: true } } },
+        orderBy: { updatedAt: "desc" },
+      }),
+    );
     return entries.map((e) => this.shape(e));
   }
 
   async one(slug: string, type: string, entrySlug: string, locale?: string) {
     const tenantId = await this.tenantId(slug);
-    const entry = await this.prisma.entry.findFirst({
-      where: {
-        tenantId,
-        status: "PUBLISHED",
-        slug: entrySlug,
-        locale,
-        publishedVersionId: { not: null },
-        contentType: { key: type },
-      },
-      include: { publishedVersion: true, contentType: { select: { key: true } } },
-    });
+    const entry = await withTenant({ tenantId }, () =>
+      this.prisma.db.entry.findFirst({
+        where: {
+          tenantId,
+          status: "PUBLISHED",
+          slug: entrySlug,
+          locale,
+          publishedVersionId: { not: null },
+          contentType: { key: type },
+        },
+        include: { publishedVersion: true, contentType: { select: { key: true } } },
+      }),
+    );
     if (!entry) throw new NotFoundException("Page not found.");
     return this.shape(entry);
   }

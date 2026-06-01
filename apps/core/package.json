@@ -9,10 +9,10 @@
     "dev": "nest start --watch",
     "start": "node dist/main.js",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy",
+    "db:migrate": "DATABASE_URL=\"postgresql://govcms:govcms@localhost:5434/govcms?schema=public\" prisma migrate dev",
+    "db:deploy": "DATABASE_URL=\"postgresql://govcms:govcms@localhost:5434/govcms?schema=public\" prisma migrate deploy",
     "db:generate": "prisma generate",
-    "db:seed": "ts-node prisma/seed.ts"
+    "db:seed": "DATABASE_URL=\"postgresql://govcms:govcms@localhost:5434/govcms?schema=public\" ts-node prisma/seed.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

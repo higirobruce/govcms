@@ -8,14 +8,14 @@ export class TenantService {
 
   /** Creates a tenant and makes the creator its OWNER, atomically. */
   async create(creatorUserId: string, input: CreateTenantInput) {
-    const existing = await this.prisma.tenant.findUnique({
+    const existing = await this.prisma.db.tenant.findUnique({
       where: { slug: input.slug },
     });
     if (existing) {
       throw new ConflictException(`Slug "${input.slug}" is taken.`);
     }
 
-    return this.prisma.tenant.create({
+    return this.prisma.db.tenant.create({
       data: {
         name: input.name,
         slug: input.slug,
@@ -31,7 +31,7 @@ export class TenantService {
 
   /** Tenants the user belongs to, with their role in each. */
   async listForUser(userId: string) {
-    const memberships = await this.prisma.membership.findMany({
+    const memberships = await this.prisma.db.membership.findMany({
       where: { userId },
       include: { tenant: true },
       orderBy: { createdAt: "asc" },
@@ -40,6 +40,6 @@ export class TenantService {
   }
 
   async findById(tenantId: string) {
-    return this.prisma.tenant.findUnique({ where: { id: tenantId } });
+    return this.prisma.db.tenant.findUnique({ where: { id: tenantId } });
   }
 }

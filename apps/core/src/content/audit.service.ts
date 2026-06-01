@@ -34,7 +34,7 @@ export class AuditService {
   }
 
   list(tenantId: string, limit = 50) {
-    return this.prisma.auditLog.findMany({
+    return this.prisma.db.auditLog.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
       take: Math.min(limit, 200),

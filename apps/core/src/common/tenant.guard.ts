@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import type { Request } from "express";
 import { PrismaService } from "../prisma/prisma.service";
+import { withTenant } from "../prisma/tenant-context";
 import type { AuthUser, TenantMembership } from "./decorators";
 
 /**
@@ -36,11 +37,20 @@ export class TenantGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    const membership = await this.prisma.membership.findUnique({
-      where: {
-        userId_tenantId: { userId: req.user.userId, tenantId: req.tenantId },
-      },
-    });
+    // Runs before the context interceptor, so set the isolation context here
+    // for the membership lookup (RLS allows it via the user_id match).
+    const membership = await withTenant(
+      { userId: req.user.userId, tenantId: req.tenantId },
+      () =>
+        this.prisma.db.membership.findUnique({
+          where: {
+            userId_tenantId: {
+              userId: req.user!.userId,
+              tenantId: req.tenantId!,
+            },
+          },
+        }),
+    );
     if (!membership) {
       throw new ForbiddenException("No access to this tenant.");
     }
