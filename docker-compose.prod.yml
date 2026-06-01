@@ -1,0 +1,60 @@
+# Production-shaped stack: Postgres + Core API + public site.
+# The admin app is a static SPA — build it (pnpm --filter @govcms/admin build)
+# and serve apps/admin/dist behind any static host / the same ingress.
+#
+#   docker compose -f docker-compose.prod.yml up --build
+#
+# Set real secrets via an .env file next to this compose (never commit it).
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-govcms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-govcms}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-govcms}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  core:
+    build:
+      context: .
+      dockerfile: apps/core/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-govcms}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-govcms}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      PORT: 4000
+      NODE_ENV: production
+    ports:
+      - "4000:4000"
+
+  site:
+    build:
+      context: .
+      dockerfile: apps/site/Dockerfile
+      args:
+        API_URL: http://core:4000/api
+    restart: unless-stopped
+    depends_on:
+      - core
+    environment:
+      API_URL: http://core:4000/api
+      SITE_SLUG: ${SITE_SLUG:-pilot}
+      PORT: 4004
+      NODE_ENV: production
+    ports:
+      - "4004:4004"
+
+volumes:
+  pgdata:
