@@ -1,0 +1,174 @@
+// govcms data model. See docs/implementation.html §05.
+// Every tenant-owned row carries tenantId; isolation is enforced by Postgres
+// row-level security (see migrations) and by the app-layer tenant guard.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  REVIEWER
+  VIEWER
+}
+
+enum DeploymentMode {
+  SHARED
+  DEDICATED
+}
+
+enum EntryStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+model Tenant {
+  id             String         @id @default(cuid())
+  name           String
+  slug           String         @unique
+  locales        String[]       @default(["en", "rw"])
+  defaultLocale  String         @default("en")
+  theme          Json?
+  deploymentMode DeploymentMode @default(SHARED)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  memberships  Membership[]
+  contentTypes ContentType[]
+  entries      Entry[]
+  media        Media[]
+  auditLogs    AuditLog[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships      Membership[]
+  authoredVersions EntryVersion[]
+}
+
+// RBAC is per-tenant: a user's role lives on their membership, not the user.
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String
+  tenantId  String
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+}
+
+// Admin-defined content types. `schema` holds the field definitions (JSON),
+// which is what lets a non-developer model "Tender" or "Service" without a deploy.
+model ContentType {
+  id       String @id @default(cuid())
+  tenantId String
+  key      String
+  name     String
+  schema   Json   @default("{}")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  entries Entry[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+}
+
+model Entry {
+  id            String      @id @default(cuid())
+  tenantId      String
+  contentTypeId String
+  locale        String
+  slug          String
+  status        EntryStatus @default(DRAFT)
+  currentVersionId String?  @unique
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contentType    ContentType     @relation(fields: [contentTypeId], references: [id], onDelete: Cascade)
+  versions       EntryVersion[]  @relation("EntryVersions")
+  currentVersion EntryVersion?   @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  workflow       WorkflowState[]
+
+  @@unique([tenantId, contentTypeId, locale, slug])
+  @@index([tenantId])
+}
+
+// Immutable: edits append a new version; publishing points the entry at one.
+// This gives free rollback and a real audit trail.
+model EntryVersion {
+  id        String   @id @default(cuid())
+  entryId   String
+  data      Json
+  authorId  String
+  createdAt DateTime @default(now())
+
+  entry     Entry  @relation("EntryVersions", fields: [entryId], references: [id], onDelete: Cascade)
+  currentOf Entry? @relation("CurrentVersion")
+  author    User   @relation(fields: [authorId], references: [id])
+
+  @@index([entryId])
+}
+
+model WorkflowState {
+  id        String      @id @default(cuid())
+  entryId   String
+  state     EntryStatus
+  actorId   String
+  note      String?
+  createdAt DateTime    @default(now())
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  tenantId  String
+  path      String
+  mimeType  String
+  altText   Json     @default("{}") // per-locale alt text — accessibility is not optional
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  actorId   String
+  action    String
+  target    String
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, createdAt])
+}
