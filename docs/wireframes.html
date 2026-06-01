@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>govcms — CMS wireframes</title>
+<style>
+  :root {
+    --paper:#EEF2F7; --paper-2:#E3EAF3; --ink:#16181D; --ink-2:#353A43;
+    --ink-3:#626973; --ink-4:#939AA5; --azure:#2E5FA8; --azure-soft:#C5D5EC;
+    --azure-deep:#14355F; --line:#D3DCE7; --line-strong:#B5C2D2; --highlight:#DCE7F5;
+    --font-display:"Tiempos","Iowan Old Style","Georgia",serif;
+    --font-sans:"Söhne","Inter",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+    --font-mono:"JetBrains Mono","SF Mono","Menlo",monospace;
+    /* wireframe palette — intentionally grayscale + one accent for hierarchy */
+    --wf-line:#CBD2DB; --wf-line-2:#DBE0E7; --wf-fill:#E9ECF0; --wf-fill-2:#F4F6F8;
+    --wf-ink:#7A828D; --wf-ink-2:#9AA1AB; --wf-accent:#9DB4D6; --wf-accent-ink:#3D5C8C;
+    --t-12:.75rem; --t-14:.875rem; --t-16:1rem; --t-18:1.125rem; --t-22:1.375rem;
+    --t-28:1.75rem; --t-36:2.25rem; --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px;
+    --s-5:24px; --s-6:32px; --s-7:48px; --s-8:64px; --s-9:96px; --r-2:4px; --r-3:8px;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans);
+    font-size:var(--t-16);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  h1{font-family:var(--font-display);font-size:var(--t-36);line-height:1.15;letter-spacing:-.015em;font-weight:400;margin:0 0 var(--s-5);}
+  h2{font-size:var(--t-28);line-height:1.25;letter-spacing:-.01em;font-weight:500;margin:0 0 var(--s-2);}
+  h3{font-size:var(--t-18);font-weight:600;margin:0 0 var(--s-2);}
+  p{margin:0 0 var(--s-4);max-width:70ch;}
+  .lead{font-size:var(--t-18);color:var(--ink-2);max-width:68ch;}
+  .eyebrow{font-family:var(--font-mono);font-size:var(--t-12);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 var(--s-2);}
+  small,.caption{font-size:var(--t-14);color:var(--ink-3);}
+  a{color:var(--ink);text-decoration-color:var(--line-strong);text-underline-offset:3px;}
+  ul{max-width:70ch;padding-left:var(--s-5);margin:0 0 var(--s-4);}
+  li{margin:2px 0;}
+  .page{max-width:1180px;margin:0 auto;padding:var(--s-9) var(--s-6);}
+  .section{padding:var(--s-7) 0;border-top:1px solid var(--line);scroll-margin-top:var(--s-4);}
+  .section:first-of-type{border-top:0;}
+  .row{display:flex;flex-wrap:wrap;gap:var(--s-3);align-items:center;}
+  .muted{color:var(--ink-3);}
+  .tag{display:inline-flex;align-items:center;font-family:var(--font-mono);font-size:var(--t-12);letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:var(--r-2);background:var(--paper-2);color:var(--ink-2);border:1px solid var(--line);}
+  .tag-accent{background:var(--azure-soft);border-color:var(--azure-soft);color:var(--azure-deep);}
+  .callout{display:grid;grid-template-columns:auto 1fr;gap:var(--s-3);padding:var(--s-4) var(--s-5);border-radius:var(--r-3);background:var(--paper-2);border-left:2px solid var(--ink-3);margin:var(--s-4) 0;}
+  .callout .mark{font-family:var(--font-mono);font-size:var(--t-12);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);}
+  .callout-tip{border-left-color:var(--azure);background:var(--highlight);}
+  .callout-tip .mark{color:var(--azure-deep);}
+  .callout p:last-child{margin-bottom:0;}
+  .toc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-2) var(--s-5);margin-top:var(--s-4);}
+  .toc a{display:flex;gap:var(--s-3);padding:6px 0;color:var(--ink-2);text-decoration:none;border-bottom:1px dotted var(--line);}
+  .toc a:hover{color:var(--ink);border-bottom-color:var(--ink);}
+  .toc .n{font-family:var(--font-mono);font-size:var(--t-12);color:var(--ink-3);}
+  .screen-head{display:flex;align-items:baseline;gap:var(--s-3);flex-wrap:wrap;margin-bottom:var(--s-3);}
+  .notes{margin-top:var(--s-4);font-size:var(--t-14);color:var(--ink-2);}
+  .notes b{color:var(--ink);}
+
+  /* ── wireframe primitives ─────────────────────────────────── */
+  .wf{border:1px solid var(--line-strong);border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(20,30,50,.05),0 8px 24px rgba(20,30,50,.06);}
+  .wf-bar{display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;background:var(--paper-2);border-bottom:1px solid var(--line);}
+  .wf-bar .dot{width:10px;height:10px;border-radius:50%;background:var(--wf-line);}
+  .wf-bar .url{margin-left:8px;flex:1;max-width:340px;height:18px;border-radius:9px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;padding:0 10px;font-family:var(--font-mono);font-size:11px;color:var(--wf-ink-2);}
+  .wf-app{display:grid;grid-template-columns:212px 1fr;min-height:520px;}
+  .wf-side{background:#FAFBFC;border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:4px;}
+  .wf-brand{display:flex;align-items:center;gap:8px;padding:4px 8px 12px;}
+  .wf-logo{width:24px;height:24px;border-radius:6px;background:var(--wf-accent);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;}
+  .wf-brand b{font-size:14px;}
+  .wf-switch{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:6px;padding:7px 9px;margin-bottom:10px;font-size:12px;color:var(--ink-2);background:#fff;}
+  .wf-switch .car{color:var(--wf-ink-2);}
+  .wf-navlabel{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--wf-ink-2);padding:8px 8px 4px;}
+  .nav{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:6px;font-size:13px;color:var(--ink-2);}
+  .nav .ic{width:15px;height:15px;border-radius:4px;background:var(--wf-fill);flex:none;}
+  .nav.active{background:var(--highlight);color:var(--azure-deep);font-weight:500;}
+  .nav.active .ic{background:var(--wf-accent);}
+  .wf-side .spacer{flex:1;}
+  .wf-user{display:flex;align-items:center;gap:9px;padding:8px;border-top:1px solid var(--line);margin-top:6px;font-size:12px;color:var(--ink-2);}
+  .wf-avatar{width:24px;height:24px;border-radius:50%;background:var(--wf-fill);flex:none;}
+  .wf-main{display:flex;flex-direction:column;min-width:0;}
+  .wf-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 18px;border-bottom:1px solid var(--line);background:#fff;}
+  .wf-crumb{font-size:13px;color:var(--ink-3);}
+  .wf-crumb b{color:var(--ink);font-weight:600;}
+  .wf-content{padding:20px;background:#fff;flex:1;}
+  .wf-canvas{background:#FBFCFD;}
+
+  .ph{background:var(--wf-fill);border-radius:4px;}
+  .ph-line{height:8px;background:var(--wf-fill);border-radius:4px;}
+  .ph-line.d{background:var(--wf-fill-2);}
+  .ph-h{height:13px;background:var(--wf-line);border-radius:4px;}
+  .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--wf-line);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--ink-2);background:#fff;}
+  .btn-p{background:var(--wf-accent);border-color:var(--wf-accent);color:#fff;font-weight:500;}
+  .inp{border:1px solid var(--wf-line);border-radius:6px;height:34px;background:#fff;display:flex;align-items:center;padding:0 11px;font-size:12px;color:var(--wf-ink-2);}
+  .inp.area{height:auto;min-height:90px;align-items:flex-start;padding:10px 11px;}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--wf-line);color:var(--ink-2);background:#fff;}
+  .pill.s{background:var(--wf-fill);} /* status: draft */
+  .pill.rev{background:#FBEFD8;border-color:#EBD9B4;color:#8C6212;}
+  .pill.pub{background:#D9EDDF;border-color:#BBDCC6;color:#2C6B41;}
+  .pill.app{background:var(--highlight);border-color:var(--azure-soft);color:var(--azure-deep);}
+  .imgbox{background:repeating-linear-gradient(45deg,var(--wf-fill),var(--wf-fill) 7px,var(--wf-fill-2) 7px,var(--wf-fill-2) 14px);border:1px solid var(--wf-line-2);border-radius:6px;display:grid;place-items:center;color:var(--wf-ink-2);font-size:11px;}
+  .card{border:1px solid var(--line);border-radius:8px;padding:14px;background:#fff;}
+  .stat{border:1px solid var(--line);border-radius:8px;padding:14px;background:#fff;}
+  .stat .num{font-size:22px;font-weight:600;color:var(--ink);}
+  .stat .lbl{font-size:12px;color:var(--ink-3);}
+  .tbl{width:100%;border-collapse:collapse;font-size:12px;}
+  .tbl th{text-align:left;font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--wf-ink-2);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line);}
+  .tbl td{padding:10px;border-bottom:1px solid var(--wf-line-2);color:var(--ink-2);}
+  .tbl tr:hover td{background:var(--wf-fill-2);}
+  .grid{display:grid;gap:12px;}
+  .g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:repeat(3,1fr);} .g4{grid-template-columns:repeat(4,1fr);}
+  .flex{display:flex;} .between{justify-content:space-between;} .center{align-items:center;}
+  .gap2{gap:8px;} .gap3{gap:12px;} .wrap{flex-wrap:wrap;}
+  .editor{display:grid;grid-template-columns:1fr 264px;gap:0;min-height:480px;}
+  .editor-main{padding:20px 22px;border-right:1px solid var(--line);}
+  .editor-side{padding:18px;background:#FAFBFC;display:flex;flex-direction:column;gap:16px;}
+  .field{margin-bottom:16px;}
+  .field .fl{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px;display:flex;justify-content:space-between;}
+  .field .fl .req{color:#B0563E;}
+  .block{border:1px dashed var(--wf-line);border-radius:6px;padding:12px;background:var(--wf-fill-2);margin-bottom:10px;position:relative;}
+  .block .bt{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--wf-ink-2);margin-bottom:8px;}
+  .addblock{border:1px dashed var(--wf-accent);color:var(--wf-accent-ink);border-radius:6px;padding:9px;text-align:center;font-size:12px;background:#fff;}
+  .seg{display:inline-flex;border:1px solid var(--wf-line);border-radius:6px;overflow:hidden;font-size:11px;}
+  .seg span{padding:5px 10px;color:var(--ink-3);border-right:1px solid var(--wf-line);}
+  .seg span:last-child{border-right:0;}
+  .seg span.on{background:var(--highlight);color:var(--azure-deep);font-weight:500;}
+  .timeline{position:relative;padding-left:18px;}
+  .timeline::before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--wf-line-2);}
+  .tl{position:relative;margin-bottom:14px;}
+  .tl::before{content:"";position:absolute;left:-16px;top:3px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--wf-accent);}
+  @media(max-width:920px){.toc{grid-template-columns:1fr;}.wf-app{grid-template-columns:1fr;}.wf-side{display:none;}.editor{grid-template-columns:1fr;}.g4,.g3,.g2{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="section" style="border:0;padding-top:0;">
+    <p class="eyebrow">Wireframes · low-fidelity · living document</p>
+    <h1 style="margin-bottom:var(--s-3);">govcms — the CMS platform</h1>
+    <p class="lead">Layout and flow for the <b>admin product</b> — the tool editors and admins use. These are intentionally grayscale: they pin down <em>screens, structure, and navigation</em> before any visual design. The real look is the indigo <code>admin-ui</code> brand.</p>
+    <div class="row" style="margin-top:var(--s-4);">
+      <span class="tag tag-accent">admin product</span>
+      <span class="tag">not the public sites</span>
+      <span class="caption">Public/citizen sites are a separate, RISA-conformant design system — wireframed separately later.</span>
+    </div>
+  </header>
+
+  <!-- HOW TO READ -->
+  <section class="section">
+    <div class="callout callout-tip">
+      <span class="mark">Read me</span>
+      <div>
+        <p style="margin-bottom:var(--s-2);"><b>These are wireframes, not designs.</b> Gray = structure. The single blue accent marks the <em>active</em> nav item and the <em>primary</em> action on each screen, so you can read hierarchy. Placeholder bars stand in for real text and images.</p>
+        <p>Every screen maps to something already decided in the <a href="implementation.html">implementation plan</a> — content types, immutable versions, per-tenant roles, workflow, multilingual. Nothing here is new scope; it's the plan made visible.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOC -->
+  <section class="section">
+    <h2>Screens</h2>
+    <nav class="toc">
+      <a href="#flow"><span class="n">00</span><span>Screen flow map</span></a>
+      <a href="#signin"><span class="n">01</span><span>Sign in</span></a>
+      <a href="#workspaces"><span class="n">02</span><span>Workspaces (tenant picker)</span></a>
+      <a href="#dashboard"><span class="n">03</span><span>Site dashboard</span></a>
+      <a href="#list"><span class="n">04</span><span>Content list</span></a>
+      <a href="#editor"><span class="n">05</span><span>Entry editor ★</span></a>
+      <a href="#versions"><span class="n">06</span><span>Version history</span></a>
+      <a href="#review"><span class="n">07</span><span>Review queue</span></a>
+      <a href="#media"><span class="n">08</span><span>Media library</span></a>
+      <a href="#types"><span class="n">09</span><span>Content-type builder</span></a>
+      <a href="#members"><span class="n">10</span><span>Members &amp; roles</span></a>
+    </nav>
+  </section>
+
+  <!-- 00 FLOW -->
+  <section class="section" id="flow">
+    <p class="eyebrow">00</p>
+    <h2>Screen flow map</h2>
+    <p>How the screens connect. A user signs in, picks a ministry workspace, then works inside it.</p>
+    <div class="wf" style="padding:24px;">
+      <div class="flex wrap center gap3" style="justify-content:center;font-size:12px;color:var(--ink-2);">
+        <span class="pill">Sign in</span><span class="muted">→</span>
+        <span class="pill">Workspaces</span><span class="muted">→</span>
+        <span class="pill" style="border-color:var(--wf-accent);background:var(--highlight);color:var(--azure-deep);">Dashboard</span>
+        <span class="muted">→</span>
+        <span class="pill">Content list</span><span class="muted">→</span>
+        <span class="pill" style="border-color:var(--wf-accent);background:var(--highlight);color:var(--azure-deep);">Entry editor</span>
+        <span class="muted">→</span>
+        <span class="pill rev">Submit for review</span>
+        <span class="muted">→</span>
+        <span class="pill pub">Publish</span>
+      </div>
+      <div class="flex wrap center gap3" style="justify-content:center;margin-top:14px;font-size:12px;color:var(--ink-3);">
+        <span class="caption">Side paths from the dashboard:</span>
+        <span class="pill">Media</span><span class="pill">Review queue</span><span class="pill">Content types</span><span class="pill">Members &amp; roles</span><span class="pill">Settings</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01 SIGN IN -->
+  <section class="section" id="signin">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">01</p><h2 style="margin:0;">Sign in</h2></div>
+    <p class="muted">Email + password against the Core API. Issues a JWT. (SSO / national-ID login is a later option.)</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/login</span></div>
+      <div class="wf-content wf-canvas" style="min-height:420px;display:grid;place-items:center;">
+        <div class="card" style="width:360px;padding:26px;">
+          <div class="flex center gap2" style="margin-bottom:18px;"><div class="wf-logo">g</div><b>govcms</b></div>
+          <div class="ph-h" style="width:120px;margin-bottom:18px;"></div>
+          <div class="field"><div class="fl">Email</div><div class="inp">you@ministry.gov.rw</div></div>
+          <div class="field"><div class="fl">Password</div><div class="inp">••••••••••</div></div>
+          <div class="btn-p btn" style="width:100%;justify-content:center;margin-top:6px;">Sign in</div>
+          <div class="caption" style="text-align:center;margin-top:12px;">Forgot password?</div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> <code>POST /auth/login</code> (built in Phase 0). <b>Note:</b> account creation is admin-invite, not self-serve — gov context.</div>
+  </section>
+
+  <!-- 02 WORKSPACES -->
+  <section class="section" id="workspaces">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">02</p><h2 style="margin:0;">Workspaces (tenant picker)</h2></div>
+    <p class="muted">A user may belong to several ministry sites. They pick which one to work in — that sets the <code>X-Tenant-Id</code> for everything after.</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/workspaces</span></div>
+      <div class="wf-content wf-canvas" style="min-height:420px;">
+        <div style="max-width:620px;margin:18px auto;">
+          <div class="flex between center" style="margin-bottom:16px;"><h3 style="margin:0;">Choose a workspace</h3><div class="inp" style="width:200px;">Search…</div></div>
+          <div class="grid g2">
+            <div class="card flex center gap3"><div class="imgbox" style="width:40px;height:40px;">crest</div><div><div class="ph-h" style="width:120px;margin-bottom:6px;"></div><span class="caption">Owner · 3 content types</span></div></div>
+            <div class="card flex center gap3"><div class="imgbox" style="width:40px;height:40px;">crest</div><div><div class="ph-h" style="width:140px;margin-bottom:6px;"></div><span class="caption">Editor · 5 content types</span></div></div>
+            <div class="card flex center gap3"><div class="imgbox" style="width:40px;height:40px;">crest</div><div><div class="ph-h" style="width:100px;margin-bottom:6px;"></div><span class="caption">Reviewer</span></div></div>
+            <div class="card flex center gap3" style="border-style:dashed;color:var(--wf-ink-2);justify-content:center;">+ New site <span class="caption">(owners)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> <code>GET /tenants</code> (built — returns memberships + role per tenant). Hybrid tenancy means some of these are shared, some dedicated — invisible to the user.</div>
+  </section>
+
+  <!-- 03 DASHBOARD -->
+  <section class="section" id="dashboard">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">03</p><h2 style="margin:0;">Site dashboard</h2></div>
+    <p class="muted">The home of a workspace: what needs attention, recent activity, quick counts.</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/s/health/dashboard</span></div>
+      <div class="wf-app">
+        <aside class="wf-side">
+          <div class="wf-brand"><div class="wf-logo">g</div><b>govcms</b></div>
+          <div class="wf-switch">Ministry of Health <span class="car">⌄</span></div>
+          <div class="nav active"><span class="ic"></span>Dashboard</div>
+          <div class="wf-navlabel">Content</div>
+          <div class="nav"><span class="ic"></span>Pages</div>
+          <div class="nav"><span class="ic"></span>News</div>
+          <div class="nav"><span class="ic"></span>Services</div>
+          <div class="nav"><span class="ic"></span>Media</div>
+          <div class="wf-navlabel">Manage</div>
+          <div class="nav"><span class="ic"></span>Review queue</div>
+          <div class="nav"><span class="ic"></span>Content types</div>
+          <div class="nav"><span class="ic"></span>Members</div>
+          <div class="nav"><span class="ic"></span>Settings</div>
+          <div class="spacer"></div>
+          <div class="wf-user"><span class="wf-avatar"></span>Jeanne U. · Owner</div>
+        </aside>
+        <div class="wf-main">
+          <div class="wf-top"><div class="wf-crumb"><b>Dashboard</b></div><div class="flex center gap2"><div class="seg"><span class="on">EN</span><span>RW</span></div><div class="inp" style="width:160px;">Search…</div><div class="btn-p btn">+ New entry</div></div></div>
+          <div class="wf-content wf-canvas">
+            <div class="grid g4" style="margin-bottom:18px;">
+              <div class="stat"><div class="num">54</div><div class="lbl">Published</div></div>
+              <div class="stat"><div class="num">7</div><div class="lbl">In review</div></div>
+              <div class="stat"><div class="num">12</div><div class="lbl">Drafts</div></div>
+              <div class="stat"><div class="num">3</div><div class="lbl">Languages</div></div>
+            </div>
+            <div class="grid g2">
+              <div class="card">
+                <div class="flex between center" style="margin-bottom:12px;"><h3 style="margin:0;">Needs your review</h3><span class="pill rev">3</span></div>
+                <div class="flex between center" style="padding:8px 0;border-bottom:1px solid var(--wf-line-2);"><div class="ph-line" style="width:60%;"></div><span class="pill rev">review</span></div>
+                <div class="flex between center" style="padding:8px 0;border-bottom:1px solid var(--wf-line-2);"><div class="ph-line" style="width:50%;"></div><span class="pill rev">review</span></div>
+                <div class="flex between center" style="padding:8px 0;"><div class="ph-line" style="width:70%;"></div><span class="pill rev">review</span></div>
+              </div>
+              <div class="card">
+                <h3 style="margin-bottom:12px;">Recent activity</h3>
+                <div class="timeline">
+                  <div class="tl"><div class="ph-line" style="width:80%;margin-bottom:5px;"></div><span class="caption">Jeanne published “Apply for permit” · 2h</span></div>
+                  <div class="tl"><div class="ph-line" style="width:65%;margin-bottom:5px;"></div><span class="caption">Eric submitted a draft · 5h</span></div>
+                  <div class="tl"><div class="ph-line" style="width:72%;margin-bottom:5px;"></div><span class="caption">Alice edited “Health centres” · 1d</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> entry counts by <code>status</code>, the <code>AuditLog</code> (recent activity), and the workflow queue. The locale toggle (top-right) is global to the workspace.</div>
+  </section>
+
+  <!-- 04 CONTENT LIST -->
+  <section class="section" id="list">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">04</p><h2 style="margin:0;">Content list</h2></div>
+    <p class="muted">All entries of one content type. Filter by status/locale, search, bulk actions, paginate.</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/s/health/pages</span></div>
+      <div class="wf-app">
+        <aside class="wf-side">
+          <div class="wf-brand"><div class="wf-logo">g</div><b>govcms</b></div>
+          <div class="wf-switch">Ministry of Health <span class="car">⌄</span></div>
+          <div class="nav"><span class="ic"></span>Dashboard</div>
+          <div class="wf-navlabel">Content</div>
+          <div class="nav active"><span class="ic"></span>Pages</div>
+          <div class="nav"><span class="ic"></span>News</div>
+          <div class="nav"><span class="ic"></span>Services</div>
+          <div class="nav"><span class="ic"></span>Media</div>
+          <div class="wf-navlabel">Manage</div>
+          <div class="nav"><span class="ic"></span>Review queue</div>
+          <div class="nav"><span class="ic"></span>Content types</div>
+          <div class="nav"><span class="ic"></span>Members</div>
+          <div class="spacer"></div>
+          <div class="wf-user"><span class="wf-avatar"></span>Jeanne U. · Owner</div>
+        </aside>
+        <div class="wf-main">
+          <div class="wf-top"><div class="wf-crumb">Pages</div><div class="flex center gap2"><div class="inp" style="width:180px;">Search pages…</div><div class="btn-p btn">+ New page</div></div></div>
+          <div class="wf-content">
+            <div class="flex gap2 wrap" style="margin-bottom:14px;">
+              <span class="seg"><span class="on">All</span><span>Published</span><span>In review</span><span>Draft</span></span>
+              <span class="pill">Locale: EN ⌄</span><span class="pill">Sort: Updated ⌄</span>
+            </div>
+            <table class="tbl">
+              <thead><tr><th style="width:22px;"></th><th>Title</th><th>Status</th><th>Locale</th><th>Updated</th><th>Author</th><th></th></tr></thead>
+              <tbody>
+                <tr><td><div class="ph" style="width:13px;height:13px;"></div></td><td>Apply for a business permit</td><td><span class="pill pub">published</span></td><td>EN · RW</td><td>2h ago</td><td>Jeanne</td><td class="muted">⋯</td></tr>
+                <tr><td><div class="ph" style="width:13px;height:13px;"></div></td><td>Health centres near you</td><td><span class="pill rev">in review</span></td><td>EN</td><td>5h ago</td><td>Eric</td><td class="muted">⋯</td></tr>
+                <tr><td><div class="ph" style="width:13px;height:13px;"></div></td><td>Vaccination schedule 2026</td><td><span class="pill s">draft</span></td><td>EN</td><td>1d ago</td><td>Alice</td><td class="muted">⋯</td></tr>
+                <tr><td><div class="ph" style="width:13px;height:13px;"></div></td><td>About the Ministry</td><td><span class="pill pub">published</span></td><td>EN · RW · FR</td><td>3d ago</td><td>Jeanne</td><td class="muted">⋯</td></tr>
+                <tr><td><div class="ph" style="width:13px;height:13px;"></div></td><td>Contact &amp; locations</td><td><span class="pill app">approved</span></td><td>EN · RW</td><td>4d ago</td><td>Eric</td><td class="muted">⋯</td></tr>
+              </tbody>
+            </table>
+            <div class="flex between center" style="margin-top:14px;"><span class="caption">5 of 54</span><div class="flex gap2"><span class="pill">‹ Prev</span><span class="pill">Next ›</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> <code>Entry</code> rows filtered by <code>contentTypeId</code> + <code>status</code> + <code>locale</code>. The locale column shows which translations exist for an entry.</div>
+  </section>
+
+  <!-- 05 EDITOR -->
+  <section class="section" id="editor">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">05</p><h2 style="margin:0;">Entry editor</h2><span class="tag tag-accent">the centerpiece</span></div>
+    <p class="muted">Where content is created. Left: the fields/blocks defined by the content type. Right: status, workflow, locale, metadata. Accessibility is enforced here (e.g. images require alt text before publish).</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/s/health/pages/apply-permit</span></div>
+      <div class="wf-main">
+        <div class="wf-top">
+          <div class="wf-crumb">Pages / <b>Apply for a business permit</b></div>
+          <div class="flex center gap2">
+            <div class="seg"><span class="on">EN</span><span>RW</span><span>+ FR</span></div>
+            <span class="pill s">draft</span>
+            <div class="btn">Preview</div>
+            <div class="btn-p btn">Submit for review</div>
+          </div>
+        </div>
+        <div class="editor">
+          <div class="editor-main">
+            <div class="field"><div class="fl">Title <span class="req">required</span></div><div class="inp" style="height:40px;font-size:14px;color:var(--ink-2);">Apply for a business permit</div></div>
+            <div class="field"><div class="fl">Slug</div><div class="inp">/apply-for-a-business-permit</div></div>
+            <div class="field"><div class="fl">Summary</div><div class="inp area"><div style="width:100%;"><div class="ph-line" style="width:90%;margin-bottom:7px;"></div><div class="ph-line" style="width:70%;"></div></div></div></div>
+            <div class="fl" style="margin-bottom:8px;">Body — content blocks</div>
+            <div class="block"><div class="bt">▦ Rich text</div><div class="ph-line" style="width:95%;margin-bottom:6px;"></div><div class="ph-line" style="width:88%;margin-bottom:6px;"></div><div class="ph-line" style="width:60%;"></div></div>
+            <div class="block"><div class="bt">▣ Image</div><div class="flex gap3"><div class="imgbox" style="width:120px;height:74px;">image</div><div style="flex:1;"><div class="fl" style="font-size:11px;">Alt text <span class="req">required for publish</span></div><div class="inp">Officer reviewing a permit form</div></div></div></div>
+            <div class="block"><div class="bt">⋔ Steps / callout</div><div class="ph-line" style="width:80%;margin-bottom:6px;"></div><div class="ph-line" style="width:72%;"></div></div>
+            <div class="addblock">+ Add block — text · image · steps · file · embed</div>
+          </div>
+          <div class="editor-side">
+            <div>
+              <div class="fl">Status</div>
+              <div class="timeline" style="margin-top:8px;">
+                <div class="tl" style="margin-bottom:10px;"><b style="font-size:12px;">Draft</b><div class="caption">current</div></div>
+                <div class="tl" style="margin-bottom:10px;color:var(--wf-ink-2);"><span style="font-size:12px;">In review</span></div>
+                <div class="tl" style="margin-bottom:10px;color:var(--wf-ink-2);"><span style="font-size:12px;">Approved</span></div>
+                <div class="tl" style="color:var(--wf-ink-2);"><span style="font-size:12px;">Published</span></div>
+              </div>
+            </div>
+            <div>
+              <div class="fl">Checks before publish</div>
+              <div class="caption" style="margin-top:6px;">✓ Title set<br>✓ Slug valid<br>⚠ 1 image needs alt text<br>✓ Contrast AA</div>
+            </div>
+            <div>
+              <div class="fl">Details</div>
+              <div class="caption" style="margin-top:6px;">Author · Eric N.<br>Updated · 5h ago<br>Version · #7</div>
+              <div class="btn" style="width:100%;justify-content:center;margin-top:8px;">View history</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <b>Maps to:</b> the content type's <code>schema</code> renders the fields; each save writes a new immutable <code>EntryVersion</code>; the locale tabs are separate <code>Entry</code> rows sharing a slug. <b>Structural conformance:</b> the “Checks before publish” panel is how WCAG/branding rules are enforced — you literally can't publish with the warning unresolved.
+    </div>
+  </section>
+
+  <!-- 06 VERSIONS -->
+  <section class="section" id="versions">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">06</p><h2 style="margin:0;">Version history</h2></div>
+    <p class="muted">Opens over the editor. Every save is an immutable version — compare any two, restore any one. This is the audit trail government accountability needs.</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">…/pages/apply-permit · history</span></div>
+      <div class="wf-content wf-canvas" style="min-height:380px;">
+        <div class="grid" style="grid-template-columns:280px 1fr;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;">
+          <div style="border-right:1px solid var(--line);padding:14px;">
+            <div class="fl" style="margin-bottom:10px;">Versions</div>
+            <div class="timeline">
+              <div class="tl"><b style="font-size:12px;">#7 · current</b><div class="caption">Eric · 5h ago</div></div>
+              <div class="tl"><span style="font-size:12px;">#6 — published</span><div class="caption">Jeanne · 2d ago</div></div>
+              <div class="tl"><span style="font-size:12px;">#5</span><div class="caption">Eric · 3d ago</div></div>
+              <div class="tl"><span style="font-size:12px;">#4</span><div class="caption">Alice · 4d ago</div></div>
+            </div>
+          </div>
+          <div style="padding:16px;">
+            <div class="flex between center" style="margin-bottom:12px;"><div class="fl">Compare #6 → #7</div><div class="btn">Restore #6</div></div>
+            <div class="card" style="background:var(--wf-fill-2);">
+              <div class="ph-line" style="width:90%;margin-bottom:8px;"></div>
+              <div class="ph-line" style="width:60%;margin-bottom:8px;background:#D9EDDF;"></div>
+              <div class="ph-line" style="width:75%;margin-bottom:8px;background:#F3D9D2;"></div>
+              <div class="ph-line" style="width:82%;"></div>
+              <div class="caption" style="margin-top:10px;">green = added · red = removed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> <code>EntryVersion</code> rows (immutable) + <code>currentVersionId</code>. Restore = point the entry at an older version (itself a new event).</div>
+  </section>
+
+  <!-- 07 REVIEW -->
+  <section class="section" id="review">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">07</p><h2 style="margin:0;">Review queue</h2></div>
+    <p class="muted">What reviewers see — entries submitted for review, with approve / request-changes actions and a note.</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/s/health/review</span></div>
+      <div class="wf-app">
+        <aside class="wf-side">
+          <div class="wf-brand"><div class="wf-logo">g</div><b>govcms</b></div>
+          <div class="wf-switch">Ministry of Health <span class="car">⌄</span></div>
+          <div class="nav"><span class="ic"></span>Dashboard</div>
+          <div class="wf-navlabel">Content</div>
+          <div class="nav"><span class="ic"></span>Pages</div>
+          <div class="nav"><span class="ic"></span>News</div>
+          <div class="nav"><span class="ic"></span>Services</div>
+          <div class="nav"><span class="ic"></span>Media</div>
+          <div class="wf-navlabel">Manage</div>
+          <div class="nav active"><span class="ic"></span>Review queue</div>
+          <div class="nav"><span class="ic"></span>Content types</div>
+          <div class="nav"><span class="ic"></span>Members</div>
+          <div class="spacer"></div>
+          <div class="wf-user"><span class="wf-avatar"></span>Jeanne U. · Owner</div>
+        </aside>
+        <div class="wf-main">
+          <div class="wf-top"><div class="wf-crumb"><b>Review queue</b></div><span class="pill rev">3 awaiting</span></div>
+          <div class="wf-content">
+            <div class="card" style="margin-bottom:12px;">
+              <div class="flex between center"><div><b style="font-size:13px;">Health centres near you</b><div class="caption">Page · EN · submitted by Eric · 5h ago</div></div>
+              <div class="flex gap2"><div class="btn">Open</div><div class="btn">Request changes</div><div class="btn-p btn">Approve</div></div></div>
+            </div>
+            <div class="card" style="margin-bottom:12px;">
+              <div class="flex between center"><div><b style="font-size:13px;">Vaccination schedule 2026</b><div class="caption">News · EN · submitted by Alice · 1d ago</div></div>
+              <div class="flex gap2"><div class="btn">Open</div><div class="btn">Request changes</div><div class="btn-p btn">Approve</div></div></div>
+            </div>
+            <div class="card">
+              <div class="flex between center"><div><b style="font-size:13px;">New e-services portal</b><div class="caption">Page · RW · submitted by Eric · 1d ago</div></div>
+              <div class="flex gap2"><div class="btn">Open</div><div class="btn">Request changes</div><div class="btn-p btn">Approve</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> <code>WorkflowState</code> transitions (draft → in_review → approved → published) + per-tenant roles — only Reviewer/Admin/Owner see this. Every action is logged to <code>AuditLog</code>.</div>
+  </section>
+
+  <!-- 08 MEDIA -->
+  <section class="section" id="media">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">08</p><h2 style="margin:0;">Media library</h2></div>
+    <p class="muted">Uploaded assets. Alt text is per-locale and prompted on upload — accessibility starts at the source.</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/s/health/media</span></div>
+      <div class="wf-app">
+        <aside class="wf-side">
+          <div class="wf-brand"><div class="wf-logo">g</div><b>govcms</b></div>
+          <div class="wf-switch">Ministry of Health <span class="car">⌄</span></div>
+          <div class="nav"><span class="ic"></span>Dashboard</div>
+          <div class="wf-navlabel">Content</div>
+          <div class="nav"><span class="ic"></span>Pages</div>
+          <div class="nav"><span class="ic"></span>News</div>
+          <div class="nav"><span class="ic"></span>Services</div>
+          <div class="nav active"><span class="ic"></span>Media</div>
+          <div class="wf-navlabel">Manage</div>
+          <div class="nav"><span class="ic"></span>Review queue</div>
+          <div class="nav"><span class="ic"></span>Content types</div>
+          <div class="nav"><span class="ic"></span>Members</div>
+          <div class="spacer"></div>
+          <div class="wf-user"><span class="wf-avatar"></span>Jeanne U. · Owner</div>
+        </aside>
+        <div class="wf-main">
+          <div class="wf-top"><div class="wf-crumb">Media</div><div class="flex center gap2"><div class="inp" style="width:160px;">Search…</div><div class="btn-p btn">↑ Upload</div></div></div>
+          <div class="wf-content">
+            <div class="grid g4">
+              <div class="card" style="padding:8px;"><div class="imgbox" style="height:90px;margin-bottom:8px;">jpg</div><div class="caption">permit-officer.jpg</div><span class="pill pub" style="margin-top:4px;">alt ✓</span></div>
+              <div class="card" style="padding:8px;"><div class="imgbox" style="height:90px;margin-bottom:8px;">png</div><div class="caption">centre-map.png</div><span class="pill rev" style="margin-top:4px;">alt missing</span></div>
+              <div class="card" style="padding:8px;"><div class="imgbox" style="height:90px;margin-bottom:8px;">pdf</div><div class="caption">schedule-2026.pdf</div></div>
+              <div class="card" style="padding:8px;"><div class="imgbox" style="height:90px;margin-bottom:8px;">jpg</div><div class="caption">minister-portrait.jpg</div><span class="pill pub" style="margin-top:4px;">alt ✓</span></div>
+              <div class="card flex center" style="justify-content:center;border-style:dashed;color:var(--wf-ink-2);min-height:130px;">Drop files</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> <code>Media</code> rows with per-locale <code>altText</code>. The "alt missing" flag is what blocks an entry using that asset from publishing.</div>
+  </section>
+
+  <!-- 09 TYPE BUILDER -->
+  <section class="section" id="types">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">09</p><h2 style="margin:0;">Content-type builder</h2><span class="tag">later phase</span></div>
+    <p class="muted">How an admin defines a new content type (e.g. "Tender") and its fields — no code, no deploy. This is the flexibility the platform sells.</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/s/health/types/tender</span></div>
+      <div class="wf-content wf-canvas" style="min-height:420px;">
+        <div class="grid" style="grid-template-columns:1fr 300px;gap:16px;max-width:880px;margin:0 auto;">
+          <div class="card">
+            <div class="flex between center" style="margin-bottom:14px;"><h3 style="margin:0;">Type: Tender</h3><div class="btn-p btn">Save type</div></div>
+            <div class="block"><div class="bt">Text · “Title” · required</div><div class="ph-line" style="width:50%;"></div></div>
+            <div class="block"><div class="bt">Date · “Closing date” · required</div><div class="ph-line" style="width:40%;"></div></div>
+            <div class="block"><div class="bt">Rich text · “Description”</div><div class="ph-line" style="width:70%;"></div></div>
+            <div class="block"><div class="bt">File · “Tender document” · required</div><div class="ph-line" style="width:45%;"></div></div>
+            <div class="addblock">+ Add field</div>
+          </div>
+          <div class="card" style="height:max-content;">
+            <div class="fl" style="margin-bottom:10px;">Field types</div>
+            <div class="flex wrap gap2">
+              <span class="pill">Text</span><span class="pill">Rich text</span><span class="pill">Number</span><span class="pill">Date</span><span class="pill">Boolean</span><span class="pill">Image</span><span class="pill">File</span><span class="pill">Reference</span><span class="pill">Select</span>
+            </div>
+            <div class="caption" style="margin-top:12px;">Drag a field type in, or click to append. Stored as JSON schema on the content type.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> <code>ContentType.schema</code> (JSON). Phase 0 ships 3 hardcoded types (Page/News/Service); this visual builder is a later phase — shown now so the end-state is clear.</div>
+  </section>
+
+  <!-- 10 MEMBERS -->
+  <section class="section" id="members">
+    <div class="screen-head"><p class="eyebrow" style="margin:0;">10</p><h2 style="margin:0;">Members &amp; roles</h2></div>
+    <p class="muted">Who can do what in this workspace. Roles are per-tenant, so the same person can be Owner of one site and Reviewer of another.</p>
+    <div class="wf">
+      <div class="wf-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.govcms.gov.rw/s/health/members</span></div>
+      <div class="wf-app">
+        <aside class="wf-side">
+          <div class="wf-brand"><div class="wf-logo">g</div><b>govcms</b></div>
+          <div class="wf-switch">Ministry of Health <span class="car">⌄</span></div>
+          <div class="nav"><span class="ic"></span>Dashboard</div>
+          <div class="wf-navlabel">Content</div>
+          <div class="nav"><span class="ic"></span>Pages</div>
+          <div class="nav"><span class="ic"></span>News</div>
+          <div class="nav"><span class="ic"></span>Services</div>
+          <div class="nav"><span class="ic"></span>Media</div>
+          <div class="wf-navlabel">Manage</div>
+          <div class="nav"><span class="ic"></span>Review queue</div>
+          <div class="nav"><span class="ic"></span>Content types</div>
+          <div class="nav active"><span class="ic"></span>Members</div>
+          <div class="spacer"></div>
+          <div class="wf-user"><span class="wf-avatar"></span>Jeanne U. · Owner</div>
+        </aside>
+        <div class="wf-main">
+          <div class="wf-top"><div class="wf-crumb">Members</div><div class="btn-p btn">+ Invite member</div></div>
+          <div class="wf-content">
+            <table class="tbl">
+              <thead><tr><th>Member</th><th>Email</th><th>Role</th><th>Added</th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="flex center gap2"><span class="wf-avatar" style="width:20px;height:20px;"></span>Jeanne U.</td><td>jeanne@health.gov.rw</td><td><span class="pill app">Owner</span></td><td>Jan 2026</td><td class="muted">⋯</td></tr>
+                <tr><td class="flex center gap2"><span class="wf-avatar" style="width:20px;height:20px;"></span>Eric N.</td><td>eric@health.gov.rw</td><td><span class="pill">Editor ⌄</span></td><td>Feb 2026</td><td class="muted">⋯</td></tr>
+                <tr><td class="flex center gap2"><span class="wf-avatar" style="width:20px;height:20px;"></span>Alice M.</td><td>alice@health.gov.rw</td><td><span class="pill">Reviewer ⌄</span></td><td>Mar 2026</td><td class="muted">⋯</td></tr>
+                <tr><td class="flex center gap2"><span class="wf-avatar" style="width:20px;height:20px;"></span>Paul K.</td><td>paul@health.gov.rw</td><td><span class="pill">Viewer ⌄</span></td><td>Apr 2026</td><td class="muted">⋯</td></tr>
+              </tbody>
+            </table>
+            <div class="caption" style="margin-top:14px;">Roles: <b>Owner</b> · <b>Admin</b> · <b>Editor</b> · <b>Reviewer</b> · <b>Viewer</b> — exactly the enum in the data model.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes"><b>Maps to:</b> <code>Membership</code> (userId × tenantId × role) and the <code>Role</code> enum. Enforced by <code>TenantGuard</code> + <code>RolesGuard</code> (built in Phase 0).</div>
+  </section>
+
+  <footer class="section">
+    <p class="caption">govcms · CMS wireframes · low-fidelity · update as screens are agreed and built. Public/citizen-site wireframes (RISA-conformant) are a separate document.</p>
+  </footer>
+
+</div>
+</body>
+</html>
