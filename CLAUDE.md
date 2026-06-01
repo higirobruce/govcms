@@ -49,7 +49,12 @@ plugins/          first-party plugins, built against plugin-api
 
 ## Status
 
-**Phase 0 done** (v0.1). Standalone repo at `~/Documents/development/govcms` (moved out of `aux`). Monorepo (pnpm + Turborepo), Postgres via Docker on host port **5434**, Core API on port **4001** (both chosen to avoid clashing with the `aux` project's 5433/4000). Full Prisma data model migrated, and a working tenant + auth skeleton in `apps/core` (register/login/JWT, `X-Tenant-Id` resolution, `TenantGuard` + `RolesGuard`, audit/version tables). Verified end-to-end. Next step is Phase 1 (content types, versioning, audit log).
+**Phase 1 done** (v0.1). Standalone repo at `~/Documents/development/govcms` (moved out of `aux`). Monorepo (pnpm + Turborepo), Postgres via Docker on host port **5434**, Core API on port **4001** (both chosen to avoid clashing with the `aux` project's 5433/4000).
+
+- **Phase 0:** Prisma data model + tenant/auth skeleton (register/login/JWT, `X-Tenant-Id`, `TenantGuard` + `RolesGuard`).
+- **Phase 1:** content engine in `apps/core/src/content` — entries CRUD, **immutable versioning** (every save appends an `EntryVersion`; `currentVersion` = working copy, `publishedVersion` = live, they diverge after editing a published entry), **workflow** state machine (draft→in_review→approved→published→archived, transitions role-gated per `ACTION_ROLES`), and the **audit log** (every mutation, written in-transaction). Read-only content-types + audit endpoints. Verified end-to-end.
+
+Next step is Phase 2 (admin UI: editor + workflow + media). Note: role-based *denial* paths are coded but not yet runtime-tested (needs the members feature to grant non-OWNER roles).
 
 Run it: `pnpm install && pnpm db:up && pnpm --filter @govcms/schema build && pnpm db:generate && pnpm db:migrate && pnpm db:seed && pnpm --filter @govcms/core dev` → http://localhost:4001/api. Seeded login: `admin@govcms.local` / `changeme-now-please`.
 
