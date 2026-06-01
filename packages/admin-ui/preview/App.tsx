@@ -1,144 +1,195 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Avatar,
   Badge,
   Button,
   Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
+  CardBody,
+  CardHead,
   CardTitle,
+  Field,
   Input,
-  Label,
+  Logo,
+  Seg,
+  Stat,
+  Textarea,
 } from "../src";
 
-export function App() {
-  const [dark, setDark] = useState(false);
+type Theme = "light" | "dark";
+type Density = "comfortable" | "compact";
+type Sidebar = "light" | "deep";
 
-  const toggle = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle("dark", next);
-  };
+const ACCENTS: Record<string, { accent: string; strong: string; soft: string; ink: string }> = {
+  "Sky blue": { accent: "#0E72B8", strong: "#0A567F", soft: "#E8F2FB", ink: "#0B4E7E" },
+  Green: { accent: "#1E9E57", strong: "#157A43", soft: "#E5F5EC", ink: "#136540" },
+  Plum: { accent: "#7A5AC9", strong: "#5E45A0", soft: "#F0EBFA", ink: "#4A3382" },
+  Terracotta: { accent: "#C26A2B", strong: "#9E5420", soft: "#FBEEE2", ink: "#7E441A" },
+};
+
+export function App() {
+  const [theme, setTheme] = useState<Theme>("light");
+  const [density, setDensity] = useState<Density>("comfortable");
+  const [sidebar, setSidebar] = useState<Sidebar>("light");
+  const [accent, setAccent] = useState("Sky blue");
+  const [locale, setLocale] = useState("EN");
+
+  useEffect(() => {
+    const r = document.documentElement;
+    r.dataset.theme = theme === "dark" ? "dark" : "";
+    r.dataset.density = density === "compact" ? "compact" : "";
+    r.dataset.sidebar = sidebar === "deep" ? "deep" : "";
+    const a = ACCENTS[accent];
+    r.style.setProperty("--accent", a.accent);
+    r.style.setProperty("--accent-strong", a.strong);
+    r.style.setProperty("--accent-soft", a.soft);
+    r.style.setProperty("--accent-ink", a.ink);
+  }, [theme, density, sidebar, accent]);
 
   return (
-    <div className="min-h-screen">
-      {/* Top bar — a taste of the product chrome */}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/80 px-6 py-3 backdrop-blur">
-        <div className="flex items-center gap-2">
-          <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-            g
-          </div>
-          <span className="font-semibold tracking-tight">govcms</span>
-          <Badge variant="secondary" className="ml-1">
-            Studio
-          </Badge>
+    <div style={{ minHeight: "100vh" }}>
+      {/* Topbar with brand + tweaks */}
+      <header className="topbar" style={{ position: "sticky", top: 0, zIndex: 10 }}>
+        <Logo size={28} />
+        <Badge status="approved" className="mono">
+          design system
+        </Badge>
+        <span className="grow" />
+        <div className="flex items-center g3 wrap">
+          <Seg
+            options={Object.keys(ACCENTS)}
+            value={accent}
+            onChange={setAccent}
+          />
+          <Seg
+            options={["comfortable", "compact"]}
+            value={density}
+            onChange={(v) => setDensity(v as Density)}
+          />
+          <Button
+            variant={sidebar === "deep" ? "primary" : "default"}
+            size="sm"
+            onClick={() => setSidebar(sidebar === "deep" ? "light" : "deep")}
+          >
+            Deep sidebar
+          </Button>
+          <Button size="sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+            {theme === "dark" ? "☀ Light" : "☾ Dark"}
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={toggle}>
-          {dark ? "☀ Light" : "☾ Dark"}
-        </Button>
       </header>
 
-      <main className="mx-auto max-w-5xl space-y-10 px-6 py-10">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Product design system
-          </h1>
-          <p className="mt-1 max-w-prose text-sm text-muted-foreground">
-            The CMS's own brand — modern and productive. Deliberately separate
-            from the RISA-conformant government delivery system.
-          </p>
+      <div className="page page-wide" style={{ maxWidth: 1080, margin: "0 auto" }}>
+        <div className="page-head">
+          <div>
+            <h1 className="page-title">Product design system</h1>
+            <p className="page-sub">
+              The CMS's own brand — distinctly Rwandan. The flag palette is the
+              workflow: blue approved, sun in&nbsp;review, green published.
+            </p>
+          </div>
+          <Seg options={["EN", "RW", "FR"]} value={locale} onChange={setLocale} />
+        </div>
+
+        {/* Stats */}
+        <div className="grid g4" style={{ gridTemplateColumns: "repeat(4,1fr)", marginBottom: 22 }}>
+          <Stat num="54" label="Published" accent="var(--green)" />
+          <Stat num="7" label="In review" accent="var(--amber)" />
+          <Stat num="12" label="Drafts" accent="var(--ink-4)" />
+          <Stat num="3" label="Languages" accent="var(--accent)" />
         </div>
 
         {/* Buttons */}
-        <section className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground">Buttons</h2>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button>Publish</Button>
-            <Button variant="secondary">Save draft</Button>
-            <Button variant="outline">Preview</Button>
-            <Button variant="ghost">Cancel</Button>
-            <Button variant="destructive">Delete</Button>
-            <Button variant="link">Learn more</Button>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button size="sm">Small</Button>
-            <Button size="default">Default</Button>
-            <Button size="lg">Large</Button>
-          </div>
-        </section>
+        <div className="section-label" style={{ marginBottom: 10 }}>Buttons</div>
+        <div className="flex g3 wrap items-center" style={{ marginBottom: 8 }}>
+          <Button variant="primary">Publish</Button>
+          <Button>Save draft</Button>
+          <Button variant="ghost">Preview</Button>
+          <Button variant="success">Approve</Button>
+          <Button variant="danger">Request changes</Button>
+        </div>
+        <div className="flex g3 wrap items-center" style={{ marginBottom: 24 }}>
+          <Button size="sm">Small</Button>
+          <Button>Default</Button>
+        </div>
 
-        {/* Badges */}
-        <section className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Status badges
-          </h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">Draft</Badge>
-            <Badge variant="outline">In review</Badge>
-            <Badge variant="success">Published</Badge>
-            <Badge>Approved</Badge>
-            <Badge variant="destructive">Archived</Badge>
-          </div>
-        </section>
+        {/* Workflow badges — the flag palette */}
+        <div className="section-label" style={{ marginBottom: 10 }}>
+          Workflow status — flag palette
+        </div>
+        <div className="flex g2 wrap items-center" style={{ marginBottom: 24 }}>
+          <Badge status="draft" dot />
+          <Badge status="review" dot />
+          <Badge status="approved" dot />
+          <Badge status="published" dot />
+          <Badge status="changes" dot />
+        </div>
 
         {/* Cards + form */}
-        <section className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Cards &amp; forms
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>New entry</CardTitle>
-                <CardDescription>
-                  Create a page for the Pilot Ministry site.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="title">Title</Label>
-                  <Input id="title" placeholder="e.g. Apply for a permit" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="slug">Slug</Label>
-                  <Input id="slug" placeholder="apply-for-a-permit" />
-                </div>
-              </CardContent>
-              <CardFooter className="gap-3">
-                <Button>Save draft</Button>
+        <div className="grid g4" style={{ gridTemplateColumns: "1fr 1fr" }}>
+          <Card>
+            <CardHead>
+              <CardTitle>New entry</CardTitle>
+              <Badge status="draft" />
+            </CardHead>
+            <CardBody>
+              <Field label="Title" required htmlFor="title">
+                <Input id="title" defaultValue="Apply for a business permit" />
+              </Field>
+              <Field label="Slug" htmlFor="slug">
+                <Input id="slug" defaultValue="apply-for-a-business-permit" />
+              </Field>
+              <Field label="Summary" optional htmlFor="sum">
+                <Textarea id="sum" placeholder="One or two sentences…" />
+              </Field>
+              <div className="flex g3">
+                <Button variant="primary">Submit for review</Button>
                 <Button variant="ghost">Cancel</Button>
-              </CardFooter>
-            </Card>
+              </div>
+            </CardBody>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Pilot Ministry</CardTitle>
-                <CardDescription>3 content types · 2 locales</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>Pages</span>
-                  <Badge variant="secondary">12</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>News</span>
-                  <Badge variant="secondary">34</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Services</span>
-                  <Badge variant="secondary">8</Badge>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  Open workspace
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </section>
-      </main>
+          <Card>
+            <CardHead>
+              <CardTitle>Pages</CardTitle>
+              <span className="muted t13">Ministry of Health</span>
+            </CardHead>
+            <CardBody style={{ paddingTop: 12 }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Locale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="t-title">Apply for a permit</td>
+                    <td><Badge status="published" dot /></td>
+                    <td className="muted">EN · RW</td>
+                  </tr>
+                  <tr>
+                    <td className="t-title">Health centres near you</td>
+                    <td><Badge status="review" dot /></td>
+                    <td className="muted">EN</td>
+                  </tr>
+                  <tr>
+                    <td className="t-title">Vaccination schedule</td>
+                    <td><Badge status="draft" dot /></td>
+                    <td className="muted">EN</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="flex items-center g3" style={{ marginTop: 14 }}>
+                <Avatar name="Jeanne U" size={28} />
+                <Avatar name="Eric N" size={28} />
+                <Avatar name="Alice M" size={28} />
+                <span className="muted t13">3 editors</span>
+              </div>
+            </CardBody>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,32 +1,41 @@
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/cn";
 
-const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
-  {
-    variants: {
-      variant: {
-        default: "border-transparent bg-primary text-primary-foreground",
-        secondary: "border-transparent bg-secondary text-secondary-foreground",
-        outline: "border-border text-foreground",
-        success: "border-transparent bg-success text-success-foreground",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground",
-      },
-    },
-    defaultVariants: { variant: "default" },
-  },
-);
+/** Workflow statuses — the flag palette maps onto these:
+ *  approved = blue, review = sun/amber, published = green, changes = red. */
+export type BadgeStatus =
+  | "draft"
+  | "review"
+  | "approved"
+  | "published"
+  | "changes";
 
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
-    VariantProps<typeof badgeVariants> {}
+const STATUS: Record<BadgeStatus, { cls: string; label: string }> = {
+  draft: { cls: "badge-draft", label: "Draft" },
+  review: { cls: "badge-review", label: "In review" },
+  approved: { cls: "badge-approved", label: "Approved" },
+  published: { cls: "badge-published", label: "Published" },
+  changes: { cls: "badge-changes", label: "Changes requested" },
+};
 
-export function Badge({ className, variant, ...props }: BadgeProps) {
-  return (
-    <span className={cn(badgeVariants({ variant }), className)} {...props} />
-  );
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  status?: BadgeStatus;
+  /** Show the leading status dot. */
+  dot?: boolean;
 }
 
-export { badgeVariants };
+export function Badge({
+  status = "draft",
+  dot,
+  className,
+  children,
+  ...props
+}: BadgeProps) {
+  const s = STATUS[status] ?? STATUS.draft;
+  return (
+    <span className={cn("badge", s.cls, className)} {...props}>
+      {dot && <span className="dotc" />}
+      {children ?? s.label}
+    </span>
+  );
+}
