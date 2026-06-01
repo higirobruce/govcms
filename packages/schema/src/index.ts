@@ -60,3 +60,60 @@ export type CreateTenantInput = z.infer<typeof CreateTenantInput>;
 
 /** Resolved per request from the X-Tenant-Id header (subdomain later). */
 export const TENANT_HEADER = "x-tenant-id";
+
+// ── Content ──────────────────────────────────────────────────────────────
+
+/** A version payload — field values keyed by the content type's field keys.
+ *  Field-level validation against ContentType.schema comes with the type builder. */
+export const EntryData = z.record(z.unknown());
+export type EntryData = z.infer<typeof EntryData>;
+
+const slug = z
+  .string()
+  .min(1)
+  .max(200)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Lowercase, digits and single hyphens.");
+
+export const CreateEntryInput = z.object({
+  contentTypeKey: z.string().min(1),
+  locale: z.string().min(2).max(10),
+  slug,
+  data: EntryData.default({}),
+});
+export type CreateEntryInput = z.infer<typeof CreateEntryInput>;
+
+export const UpdateEntryInput = z
+  .object({
+    slug: slug.optional(),
+    data: EntryData.optional(),
+  })
+  .refine((v) => v.slug !== undefined || v.data !== undefined, {
+    message: "Provide slug and/or data to update.",
+  });
+export type UpdateEntryInput = z.infer<typeof UpdateEntryInput>;
+
+export const ListEntriesQuery = z.object({
+  type: z.string().optional(),
+  status: EntryStatus.optional(),
+  locale: z.string().optional(),
+});
+export type ListEntriesQuery = z.infer<typeof ListEntriesQuery>;
+
+/** Optional reviewer/editor note attached to a workflow transition. */
+export const WorkflowNoteInput = z.object({
+  note: z.string().max(2000).optional(),
+});
+export type WorkflowNoteInput = z.infer<typeof WorkflowNoteInput>;
+
+/** Workflow actions and the transition each performs. The service validates
+ *  the current state allows the action. */
+export const WORKFLOW_TRANSITIONS = {
+  submit: { from: ["DRAFT"], to: "IN_REVIEW" },
+  approve: { from: ["IN_REVIEW"], to: "APPROVED" },
+  request_changes: { from: ["IN_REVIEW", "APPROVED"], to: "DRAFT" },
+  publish: { from: ["APPROVED"], to: "PUBLISHED" },
+  archive: { from: ["PUBLISHED"], to: "ARCHIVED" },
+  restore_to_draft: { from: ["ARCHIVED"], to: "DRAFT" },
+} as const satisfies Record<string, { from: EntryStatus[]; to: EntryStatus }>;
+
+export type WorkflowAction = keyof typeof WORKFLOW_TRANSITIONS;

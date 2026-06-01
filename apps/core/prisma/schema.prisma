@@ -100,15 +100,19 @@ model Entry {
   locale        String
   slug          String
   status        EntryStatus @default(DRAFT)
-  currentVersionId String?  @unique
+  // currentVersion = latest working copy (shown in the editor);
+  // publishedVersion = what is actually live. They diverge once you edit after publishing.
+  currentVersionId   String? @unique
+  publishedVersionId String? @unique
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  contentType    ContentType     @relation(fields: [contentTypeId], references: [id], onDelete: Cascade)
-  versions       EntryVersion[]  @relation("EntryVersions")
-  currentVersion EntryVersion?   @relation("CurrentVersion", fields: [currentVersionId], references: [id])
-  workflow       WorkflowState[]
+  tenant           Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contentType      ContentType     @relation(fields: [contentTypeId], references: [id], onDelete: Cascade)
+  versions         EntryVersion[]  @relation("EntryVersions")
+  currentVersion   EntryVersion?   @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  publishedVersion EntryVersion?   @relation("PublishedVersion", fields: [publishedVersionId], references: [id])
+  workflow         WorkflowState[]
 
   @@unique([tenantId, contentTypeId, locale, slug])
   @@index([tenantId])
@@ -123,9 +127,10 @@ model EntryVersion {
   authorId  String
   createdAt DateTime @default(now())
 
-  entry     Entry  @relation("EntryVersions", fields: [entryId], references: [id], onDelete: Cascade)
-  currentOf Entry? @relation("CurrentVersion")
-  author    User   @relation(fields: [authorId], references: [id])
+  entry       Entry  @relation("EntryVersions", fields: [entryId], references: [id], onDelete: Cascade)
+  currentOf   Entry? @relation("CurrentVersion")
+  publishedOf Entry? @relation("PublishedVersion")
+  author      User   @relation(fields: [authorId], references: [id])
 
   @@index([entryId])
 }

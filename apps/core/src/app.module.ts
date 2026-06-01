@@ -4,6 +4,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { TenantModule } from "./tenant/tenant.module";
 import { TenantMiddleware } from "./tenant/tenant.middleware";
+import { ContentModule } from "./content/content.module";
 import { HealthController } from "./health/health.controller";
 
 @Module({
@@ -12,6 +13,7 @@ import { HealthController } from "./health/health.controller";
     PrismaModule,
     AuthModule,
     TenantModule,
+    ContentModule,
   ],
   controllers: [HealthController],
 })
