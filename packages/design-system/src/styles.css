@@ -1,0 +1,140 @@
+/* ==========================================================================
+   govcms — Government delivery design system (RISA-conformant)
+   Used by PUBLIC sites (apps/site). Distinct from @govcms/admin-ui.
+   Priorities: trust, accessibility (WCAG 2.2 AA), legibility, national identity.
+   Rwanda flag accents (blue/yellow/green) as an institutional band, not decoration.
+   ========================================================================== */
+:root {
+  --gov-blue: #0A66A8;
+  --gov-blue-deep: #073B63;
+  --gov-green: #1E7A46;
+  --gov-yellow: #F7C948;
+
+  --ink: #16202B;
+  --ink-2: #3A4753;
+  --ink-3: #5C6975;
+  --bg: #FFFFFF;
+  --bg-2: #F2F6FA;
+  --bg-3: #E7EEF4;
+  --border: #D4DEE7;
+  --border-strong: #B7C5D1;
+  --link: #0A5E9E;
+  --link-visited: #6B4FA0;
+
+  --container: 1100px;
+  --r: 6px;
+  --r-lg: 10px;
+
+  --font-sans: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --sh-1: 0 1px 2px rgba(16,32,48,.06);
+  --sh-2: 0 2px 8px rgba(16,32,48,.08);
+}
+
+* , *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; font-family: var(--font-sans); color: var(--ink);
+  background: var(--bg); line-height: 1.6; font-size: 1.0625rem;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--font-serif); line-height: 1.15; color: var(--ink); margin: 0 0 .5em; letter-spacing: -.01em; }
+a { color: var(--link); text-underline-offset: 2px; }
+a:hover { text-decoration: underline; }
+
+/* Accessibility — strong, always-visible focus (WCAG 2.2). */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-visible {
+  outline: 3px solid var(--gov-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--gov-blue-deep); color: #fff; padding: 10px 16px; border-radius: 0 0 var(--r) 0;
+}
+.skip-link:focus { left: 0; }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 20px; }
+
+/* National band — the tricolor flourish */
+.gov-band { height: 4px; display: flex; }
+.gov-band i { flex: 1; }
+.gov-band i:nth-child(1) { background: var(--gov-blue); }
+.gov-band i:nth-child(2) { background: var(--gov-yellow); }
+.gov-band i:nth-child(3) { background: var(--gov-green); }
+
+/* Header / masthead */
+.gov-header { background: var(--bg); border-bottom: 1px solid var(--border); }
+.gov-masthead { display: flex; align-items: center; gap: 16px; padding: 14px 0; }
+.gov-crest { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink); }
+.gov-crest .crest-mark { flex: none; }
+.gov-crest .crest-text .org { font-family: var(--font-serif); font-weight: 600; font-size: 1.0625rem; line-height: 1.15; }
+.gov-crest .crest-text .sub { font-size: .8125rem; color: var(--ink-3); }
+.gov-masthead .spacer { flex: 1; }
+
+.gov-nav { display: flex; gap: 4px; border-top: 1px solid var(--border); }
+.gov-nav a {
+  padding: 12px 14px; color: var(--ink-2); text-decoration: none; font-weight: 500;
+  font-size: .9375rem; border-bottom: 3px solid transparent;
+}
+.gov-nav a:hover { color: var(--gov-blue-deep); background: var(--bg-2); }
+.gov-nav a[aria-current="page"] { color: var(--gov-blue-deep); border-bottom-color: var(--gov-blue); }
+
+/* Language switcher + search */
+.gov-lang { display: inline-flex; border: 1px solid var(--border-strong); border-radius: var(--r); overflow: hidden; }
+.gov-lang a { padding: 5px 10px; font-size: .8125rem; font-weight: 600; color: var(--ink-2); text-decoration: none; border-left: 1px solid var(--border); }
+.gov-lang a:first-child { border-left: 0; }
+.gov-lang a[aria-current="true"] { background: var(--gov-blue); color: #fff; }
+.gov-search { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border-strong); border-radius: var(--r); padding: 7px 12px; color: var(--ink-3); background: var(--bg); font-size: .875rem; }
+
+/* Hero */
+.gov-hero { background: var(--bg-2); border-bottom: 1px solid var(--border); }
+.gov-hero .inner { padding: 40px 0; }
+.gov-hero h1 { font-size: 2.5rem; margin: 0 0 8px; }
+.gov-hero p { font-size: 1.1875rem; color: var(--ink-2); max-width: 60ch; margin: 0; }
+
+/* Breadcrumb */
+.gov-breadcrumb { font-size: .875rem; color: var(--ink-3); padding: 14px 0; }
+.gov-breadcrumb a { color: var(--link); }
+.gov-breadcrumb .sep { margin: 0 8px; color: var(--border-strong); }
+
+/* Prose — article body */
+.prose { max-width: 70ch; font-size: 1.0625rem; }
+.prose h2 { font-size: 1.6rem; margin-top: 1.6em; }
+.prose h3 { font-size: 1.25rem; margin-top: 1.4em; }
+.prose p { margin: 0 0 1.1em; }
+.prose ul, .prose ol { margin: 0 0 1.1em; padding-left: 1.4em; }
+.prose a { color: var(--link); }
+
+/* Cards / link lists */
+.gov-grid { display: grid; gap: 16px; }
+.gov-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.gov-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.gov-card {
+  display: block; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 20px; text-decoration: none; color: var(--ink); box-shadow: var(--sh-1);
+  transition: border-color .12s, box-shadow .12s, transform .12s;
+}
+.gov-card:hover { border-color: var(--gov-blue); box-shadow: var(--sh-2); text-decoration: none; }
+.gov-card .kicker { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gov-blue-deep); }
+.gov-card h3 { font-size: 1.1875rem; margin: 8px 0 6px; }
+.gov-card p { margin: 0; color: var(--ink-2); font-size: .9375rem; }
+
+/* Footer */
+.gov-footer { background: var(--gov-blue-deep); color: #DCE7F0; margin-top: 56px; }
+.gov-footer .inner { padding: 36px 0; display: flex; flex-wrap: wrap; gap: 32px; justify-content: space-between; }
+.gov-footer a { color: #fff; }
+.gov-footer .links { display: flex; flex-wrap: wrap; gap: 10px 28px; }
+.gov-footer .links a { font-size: .9375rem; }
+.gov-footer .fine { width: 100%; border-top: 1px solid rgba(255,255,255,.18); padding-top: 18px; font-size: .8125rem; color: #AEC2D4; }
+
+/* Utility */
+.muted { color: var(--ink-3); }
+.stack > * + * { margin-top: 14px; }
+.section { padding: 36px 0; }
+.section-title { font-size: 1.4rem; margin-bottom: 16px; }
+
+@media (max-width: 760px) {
+  .gov-grid.cols-2, .gov-grid.cols-3 { grid-template-columns: 1fr; }
+  .gov-hero h1 { font-size: 2rem; }
+  .gov-nav { flex-wrap: wrap; }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@govcms/site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "govcms public delivery site — SSG/ISR, RISA-conformant.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev -p 4004",
+    "build": "next build",
+    "start": "next start -p 4004",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@govcms/design-system": "workspace:*",
+    "next": "^15.1.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.7.2"
+  }
+}

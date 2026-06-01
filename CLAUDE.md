@@ -49,14 +49,16 @@ plugins/          first-party plugins, built against plugin-api
 
 ## Status
 
-**Phase 2 done** (v0.1). Standalone repo at `~/Documents/development/govcms` (moved out of `aux`). Monorepo (pnpm + Turborepo), Postgres via Docker on host port **5434**, Core API on port **4001**, admin app on **4003** (chosen to avoid clashing with the `aux` project).
+**Phase 4 done** (v0.1). Standalone repo at `~/Documents/development/govcms` (moved out of `aux`). Monorepo (pnpm + Turborepo). Ports (chosen to avoid the `aux` project): Postgres **5434**, Core API **4001**, admin **4003**, public site **4004**.
 
 - **Phase 0:** Prisma data model + tenant/auth skeleton (register/login/JWT, `X-Tenant-Id`, `TenantGuard` + `RolesGuard`).
 - **Phase 1:** content engine in `apps/core/src/content` — entries CRUD, **immutable versioning** (`currentVersion` = working copy, `publishedVersion` = live, they diverge after editing a published entry), **workflow** state machine (role-gated), **audit log** (in-transaction). Verified end-to-end.
 - **Phase 3 (done early):** `@govcms/admin-ui` — product design system from the Claude Design handoff (Rwandan flag→workflow palette, Source Serif/Public Sans/IBM Plex Mono, attribute-driven theming).
 - **Phase 2:** `apps/admin` — React + Vite SPA (React Router + TanStack Query) wired to the Core API. Login → workspace picker → app shell (sidebar + workspace switcher) → dashboard (live counts + audit feed) → content list → **entry editor** (fields, save→version, workflow actions, status timeline, publish checks, version-history drawer with restore) → review queue. Verified clicking through the live stack. Run all three: `pnpm db:up`, `pnpm --filter @govcms/core dev`, `pnpm --filter @govcms/admin dev` (→ http://localhost:4003).
 
-Deferred: media library + content-type builder screens (placeholders), translation UI (locale tabs are display-only), and role-based denial paths (need the members feature). Next: Phase 4 (public SSG/ISR site).
+- **Phase 4:** the public delivery layer. `apps/core/src/public` — anonymous, published-only read API keyed by tenant slug (`/public/:slug/...`). `packages/design-system` — the **RISA-conformant** government delivery system (Tailwind-free pure CSS; national tricolor band, Coat-of-Arms masthead placeholder, accessible focus, serif headings + Public Sans). `apps/site` — Next.js App Router site (port **4004**), SSG home (`/[locale]`, ISR 60s) + dynamic entry pages, EN/RW routes, mandated 404 + footer privacy link. Verified via `next build` + `next start` (NOT `next dev` — it wedges compiling in this sandbox; use a prod build to test). Run: `pnpm --filter @govcms/site build && pnpm --filter @govcms/site start`.
+
+Deferred: media library + content-type builder screens, translation UI (admin locale tabs display-only; only EN content published so far), role-denial paths (need members), search (RISA wants it — header has the affordance, no backend yet). Next: Phase 5 (migrate real ministry content, deploy, harden).
 
 Run it: `pnpm install && pnpm db:up && pnpm --filter @govcms/schema build && pnpm db:generate && pnpm db:migrate && pnpm db:seed && pnpm --filter @govcms/core dev` → http://localhost:4001/api. Seeded login: `admin@govcms.local` / `changeme-now-please`.
 

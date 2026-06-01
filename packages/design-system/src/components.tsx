@@ -1,0 +1,182 @@
+import type { ReactNode } from "react";
+import { CoatOfArms } from "./CoatOfArms";
+
+export function SkipLink({ label = "Skip to main content" }: { label?: string }) {
+  return (
+    <a href="#main" className="skip-link">
+      {label}
+    </a>
+  );
+}
+
+export function Container({ children }: { children: ReactNode }) {
+  return <div className="container">{children}</div>;
+}
+
+export interface NavItem {
+  label: string;
+  href: string;
+  current?: boolean;
+}
+export interface LangOption {
+  code: string;
+  label: string;
+  href: string;
+  current?: boolean;
+}
+
+export function SiteHeader({
+  org,
+  sub,
+  home = "/",
+  nav = [],
+  languages = [],
+  searchLabel = "Search",
+}: {
+  org: string;
+  sub?: string;
+  home?: string;
+  nav?: NavItem[];
+  languages?: LangOption[];
+  searchLabel?: string;
+}) {
+  return (
+    <header className="gov-header">
+      <div className="gov-band" aria-hidden="true">
+        <i /><i /><i />
+      </div>
+      <Container>
+        <div className="gov-masthead">
+          <a className="gov-crest" href={home}>
+            <span className="crest-mark">
+              <CoatOfArms size={44} />
+            </span>
+            <span className="crest-text">
+              <span className="org">{org}</span>
+              {sub && <span className="sub">{sub}</span>}
+            </span>
+          </a>
+          <span className="spacer" />
+          {languages.length > 0 && (
+            <nav className="gov-lang" aria-label="Language">
+              {languages.map((l) => (
+                <a key={l.code} href={l.href} aria-current={l.current ? "true" : undefined} lang={l.code}>
+                  {l.label}
+                </a>
+              ))}
+            </nav>
+          )}
+          <span className="gov-search" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-5-5" />
+            </svg>
+            {searchLabel}
+          </span>
+        </div>
+      </Container>
+      {nav.length > 0 && (
+        <Container>
+          <nav className="gov-nav" aria-label="Primary">
+            {nav.map((n) => (
+              <a key={n.href} href={n.href} aria-current={n.current ? "page" : undefined}>
+                {n.label}
+              </a>
+            ))}
+          </nav>
+        </Container>
+      )}
+    </header>
+  );
+}
+
+export function SiteFooter({
+  org,
+  links = [],
+  note,
+}: {
+  org: string;
+  links?: { label: string; href: string }[];
+  note?: string;
+}) {
+  return (
+    <footer className="gov-footer">
+      <Container>
+        <div className="inner">
+          <div className="stack">
+            <strong>{org}</strong>
+            <div className="muted" style={{ color: "#AEC2D4", fontSize: ".875rem" }}>
+              Government of Rwanda
+            </div>
+          </div>
+          <nav className="links" aria-label="Footer">
+            {links.map((l) => (
+              <a key={l.href} href={l.href}>
+                {l.label}
+              </a>
+            ))}
+          </nav>
+          <div className="fine">
+            {note ?? `© ${new Date().getFullYear()} ${org}. All rights reserved.`}
+          </div>
+        </div>
+      </Container>
+    </footer>
+  );
+}
+
+export function Hero({ title, lead }: { title: string; lead?: ReactNode }) {
+  return (
+    <section className="gov-hero">
+      <Container>
+        <div className="inner">
+          <h1>{title}</h1>
+          {lead && <p>{lead}</p>}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+export function Breadcrumb({ items }: { items: { label: string; href?: string }[] }) {
+  return (
+    <nav className="gov-breadcrumb" aria-label="Breadcrumb">
+      <Container>
+        {items.map((it, i) => (
+          <span key={i}>
+            {i > 0 && <span className="sep" aria-hidden="true">/</span>}
+            {it.href ? <a href={it.href}>{it.label}</a> : <span>{it.label}</span>}
+          </span>
+        ))}
+      </Container>
+    </nav>
+  );
+}
+
+export function Prose({ children }: { children: ReactNode }) {
+  return <div className="prose">{children}</div>;
+}
+
+export function CardGrid({ cols = 3, children }: { cols?: 2 | 3; children: ReactNode }) {
+  return <div className={`gov-grid cols-${cols}`}>{children}</div>;
+}
+
+export function LinkCard({
+  kicker,
+  title,
+  summary,
+  href,
+}: {
+  kicker?: string;
+  title: string;
+  summary?: string;
+  href: string;
+}) {
+  return (
+    <a className="gov-card" href={href}>
+      {kicker && <div className="kicker">{kicker}</div>}
+      <h3>{title}</h3>
+      {summary && <p>{summary}</p>}
+    </a>
+  );
+}
