@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Badge,
-  Button,
-  Field,
-  Input,
-  Seg,
-  Textarea,
-} from "@govcms/admin-ui";
-import { api, type Status, type WorkflowAction } from "../lib/api";
+import { Badge, Button, Field, Input, Seg, Textarea } from "@govcms/admin-ui";
+import { api, type FieldDef, type Status, type WorkflowAction } from "../lib/api";
 import { Icon } from "../components/Icon";
 
 const STEP: Record<Status, number> = { DRAFT: 0, IN_REVIEW: 1, APPROVED: 2, PUBLISHED: 3, ARCHIVED: 0 };
@@ -17,6 +10,13 @@ const STEPS = ["Draft", "In review", "Approved", "Published"];
 const BADGE: Record<Status, "draft" | "review" | "approved" | "published" | "changes"> = {
   DRAFT: "draft", IN_REVIEW: "review", APPROVED: "approved", PUBLISHED: "published", ARCHIVED: "draft",
 };
+
+// Legacy fields used when a content type defines no custom fields, so existing
+// (page/news/service) content stays editable.
+const LEGACY_FIELDS: FieldDef[] = [
+  { key: "summary", label: "Summary", type: "textarea" },
+  { key: "body", label: "Body", type: "richtext" },
+];
 
 function StatusTimeline({ status }: { status: Status }) {
   const idx = STEP[status];
@@ -31,9 +31,7 @@ function StatusTimeline({ status }: { status: Status }) {
                 background: on ? "var(--accent)" : done ? "var(--green)" : "var(--surface)",
                 border: "2px solid " + (on ? "var(--accent)" : done ? "var(--green)" : "var(--border-strong)"),
                 boxShadow: on ? "0 0 0 3px var(--accent-ring)" : "none" }} />
-              {i < STEPS.length - 1 && (
-                <span style={{ width: 2, flex: 1, minHeight: 16, background: done ? "var(--green)" : "var(--border)", margin: "2px 0" }} />
-              )}
+              {i < STEPS.length - 1 && <span style={{ width: 2, flex: 1, minHeight: 16, background: done ? "var(--green)" : "var(--border)", margin: "2px 0" }} />}
             </div>
             <div style={{ paddingBottom: 14 }}>
               <div style={{ fontSize: "var(--t-13)", fontWeight: on ? 700 : 600, color: on || done ? "var(--ink)" : "var(--ink-4)" }}>{label}</div>
@@ -46,37 +44,61 @@ function StatusTimeline({ status }: { status: Status }) {
   );
 }
 
+function FieldControl({ field, value, onChange }: { field: FieldDef; value: unknown; onChange: (v: unknown) => void }) {
+  const s = typeof value === "string" ? value : value == null ? "" : String(value);
+  switch (field.type) {
+    case "textarea":
+    case "richtext":
+      return <Textarea value={s} onChange={(e) => onChange(e.target.value)} style={{ minHeight: field.type === "richtext" ? 200 : 70 }} />;
+    case "number":
+      return <Input type="number" value={s} onChange={(e) => onChange(e.target.value)} />;
+    case "date":
+      return <Input type="date" value={s} onChange={(e) => onChange(e.target.value)} />;
+    case "boolean":
+      return (
+        <label className="flex items-center g2 t14">
+          <input type="checkbox" checked={value === true} onChange={(e) => onChange(e.target.checked)} /> Yes
+        </label>
+      );
+    case "select":
+      return (
+        <select className="input" value={s} onChange={(e) => onChange(e.target.value)}>
+          <option value="">—</option>
+          {(field.options ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+      );
+    case "image":
+      return <Input value={s} onChange={(e) => onChange(e.target.value)} placeholder="Image path or URL" />;
+    default:
+      return <Input value={s} onChange={(e) => onChange(e.target.value)} />;
+  }
+}
+
 export function Editor() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: entry } = useQuery({ queryKey: ["entry", id], queryFn: () => api.entry(id) });
+  const { data: types } = useQuery({ queryKey: ["content-types"], queryFn: api.contentTypes });
 
-  const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [summary, setSummary] = useState("");
-  const [body, setBody] = useState("");
+  const [form, setForm] = useState<Record<string, unknown>>({});
   const [dirty, setDirty] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (!entry) return;
-    const d = entry.currentVersion?.data ?? {};
-    setTitle((d.title as string) ?? "");
+    setForm(entry.currentVersion?.data ?? {});
     setSlug(entry.slug);
-    setSummary((d.summary as string) ?? "");
-    setBody((d.body as string) ?? "");
     setDirty(false);
   }, [entry?.id, entry?.currentVersionId]);
 
-  function flash(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2200);
-  }
+  const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2200); };
+  const setField = (key: string, v: unknown) => { setForm((f) => ({ ...f, [key]: v })); setDirty(true); };
 
   const save = useMutation({
-    mutationFn: () => api.updateEntry(id, { slug, data: { title, summary, body } }),
+    mutationFn: () => api.updateEntry(id, { slug, data: form }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["entry", id] });
       qc.invalidateQueries({ queryKey: ["entries"] });
@@ -84,7 +106,6 @@ export function Editor() {
       flash("Saved — new version created");
     },
   });
-
   const transition = useMutation({
     mutationFn: (action: WorkflowAction) => api.transition(id, action),
     onSuccess: (_d, action) => {
@@ -95,13 +116,19 @@ export function Editor() {
     onError: (e: Error) => flash(e.message),
   });
 
-  if (!entry) {
-    return <div className="scroll-area"><div className="page muted">Loading…</div></div>;
-  }
+  if (!entry) return <div className="scroll-area"><div className="page muted">Loading…</div></div>;
 
   const status = entry.status;
-  const titleOk = title.trim().length > 0;
+  const title = (form.title as string) ?? "";
   const slugOk = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
+  const titleOk = title.trim().length > 0;
+
+  // Fields defined by this content type (minus title, which is a core field);
+  // fall back to legacy summary/body when the type has none.
+  const type = types?.find((t) => t.key === entry.contentType?.key);
+  const defined = (type?.schema?.fields ?? []).filter((f) => f.key !== "title");
+  const fields = defined.length > 0 ? defined : LEGACY_FIELDS;
+  const missingRequired = fields.filter((f) => f.required && !form[f.key]).map((f) => f.label);
 
   const actions = (
     <>
@@ -129,7 +156,7 @@ export function Editor() {
           <b className="truncate">{title || entry.slug}</b>
         </div>
         <span className="grow" />
-        <Seg options={["EN", "RW", "FR"]} value={entry.locale.toUpperCase()} onChange={() => flash("Locale switching is per-entry — coming with translations UI")} />
+        <Seg options={["EN", "RW", "FR"]} value={entry.locale.toUpperCase()} onChange={() => flash("Per-entry translations — coming with the translations UI")} />
         <Badge status={BADGE[status]} dot />
         <Button onClick={() => save.mutate()} disabled={!dirty || save.isPending}>{save.isPending ? "Saving…" : "Save draft"}</Button>
         {actions}
@@ -139,17 +166,20 @@ export function Editor() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 280px" }}>
           <div style={{ padding: "24px 26px", borderRight: "1px solid var(--border)", minWidth: 0 }}>
             <Field label="Title" required htmlFor="t">
-              <Input id="t" value={title} onChange={(e) => { setTitle(e.target.value); setDirty(true); }} style={{ height: 44, fontSize: "var(--t-16)" }} />
+              <Input id="t" value={title} onChange={(e) => setField("title", e.target.value)} style={{ height: 44, fontSize: "var(--t-16)" }} />
             </Field>
             <Field label="Slug" htmlFor="s" hint={slugOk ? undefined : "Lowercase letters, digits and single hyphens."}>
               <Input id="s" value={slug} onChange={(e) => { setSlug(e.target.value); setDirty(true); }} />
             </Field>
-            <Field label="Summary" optional htmlFor="su">
-              <Textarea id="su" value={summary} onChange={(e) => { setSummary(e.target.value); setDirty(true); }} style={{ minHeight: 70 }} />
-            </Field>
-            <Field label="Body" htmlFor="b">
-              <Textarea id="b" value={body} onChange={(e) => { setBody(e.target.value); setDirty(true); }} style={{ minHeight: 220 }} placeholder="Write the page content…" />
-            </Field>
+
+            <div className="section-label" style={{ margin: "20px 0 10px" }}>
+              {defined.length > 0 ? `${type?.name} fields` : "Content"}
+            </div>
+            {fields.map((f) => (
+              <Field key={f.key} label={f.label} required={f.required} optional={!f.required}>
+                <FieldControl field={f} value={form[f.key]} onChange={(v) => setField(f.key, v)} />
+              </Field>
+            ))}
           </div>
 
           <div style={{ padding: 18, background: "var(--surface-2)", display: "flex", flexDirection: "column", gap: 20 }}>
@@ -162,6 +192,7 @@ export function Editor() {
               <div className="t13" style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <Check ok={titleOk} label="Title set" />
                 <Check ok={slugOk} label="Slug valid" />
+                <Check ok={missingRequired.length === 0} label={missingRequired.length ? `Required: ${missingRequired.join(", ")}` : "Required fields filled"} />
                 <Check ok label="Contrast AA" />
               </div>
             </div>
@@ -179,10 +210,7 @@ export function Editor() {
       </div>
 
       {showHistory && <HistoryDrawer id={id} onClose={() => setShowHistory(false)} onRestored={() => { qc.invalidateQueries({ queryKey: ["entry", id] }); flash("Restored a version"); }} />}
-
-      {toast && (
-        <div className="toast-wrap"><div className="toast"><span className="tdot" style={{ background: "var(--green)" }} />{toast}</div></div>
-      )}
+      {toast && <div className="toast-wrap"><div className="toast"><span className="tdot" style={{ background: "var(--green)" }} />{toast}</div></div>}
     </>
   );
 }
