@@ -9,6 +9,7 @@ import { TenantModule } from "./tenant/tenant.module";
 import { TenantMiddleware } from "./tenant/tenant.middleware";
 import { ContentModule } from "./content/content.module";
 import { MembersModule } from "./members/members.module";
+import { MediaModule } from "./media/media.module";
 import { PublicModule } from "./public/public.module";
 import { HealthController } from "./health/health.controller";
 
@@ -22,6 +23,7 @@ import { HealthController } from "./health/health.controller";
     TenantModule,
     ContentModule,
     MembersModule,
+    MediaModule,
     PublicModule,
   ],
   controllers: [HealthController],
