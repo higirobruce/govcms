@@ -38,3 +38,14 @@ export const listEntries = (type: string, locale: string) =>
   get<PubEntry[]>(`/entries?type=${encodeURIComponent(type)}&locale=${encodeURIComponent(locale)}`);
 export const getEntry = (type: string, slug: string, locale: string) =>
   get<PubEntry>(`/entry/${encodeURIComponent(type)}/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`);
+
+export interface SearchResult {
+  id: string;
+  type: string;
+  slug: string;
+  locale: string;
+  title: string;
+  summary: string;
+}
+export const search = (q: string, locale: string) =>
+  get<SearchResult[]>(`/search?q=${encodeURIComponent(q)}&locale=${encodeURIComponent(locale)}`);

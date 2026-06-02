@@ -32,6 +32,7 @@ export function SiteHeader({
   nav = [],
   languages = [],
   searchLabel = "Search",
+  searchAction,
 }: {
   org: string;
   sub?: string;
@@ -39,6 +40,8 @@ export function SiteHeader({
   nav?: NavItem[];
   languages?: LangOption[];
   searchLabel?: string;
+  /** GET form target for site search (e.g. /en/search). Omit to hide search. */
+  searchAction?: string;
 }) {
   return (
     <header className="gov-header">
@@ -66,13 +69,21 @@ export function SiteHeader({
               ))}
             </nav>
           )}
-          <span className="gov-search" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-5-5" />
-            </svg>
-            {searchLabel}
-          </span>
+          {searchAction && (
+            <form className="gov-search" action={searchAction} role="search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-5-5" />
+              </svg>
+              <input
+                type="search"
+                name="q"
+                placeholder={searchLabel}
+                aria-label={searchLabel}
+                style={{ border: 0, outline: "none", background: "transparent", font: "inherit", color: "inherit", width: 130 }}
+              />
+            </form>
+          )}
         </div>
       </Container>
       {nav.length > 0 && (

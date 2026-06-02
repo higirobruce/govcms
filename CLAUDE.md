@@ -64,7 +64,9 @@ plugins/          first-party plugins, built against plugin-api
 
 - **Members & roles (done):** `apps/core/src/members` — list/add(by email, creates user + temp password if new)/set-role/remove, OWNER+ADMIN gated, last-owner guard, audit-logged. `apps/admin` Members screen (invite form + per-row role select + remove). **Role-denial now runtime-verified**: an EDITOR gets 403 on approve + on member management, 200 on listing. Fixed a latent bug: method-level `@UsePipes(ZodValidationPipe)` validated the wrong param — use `@Body(new ZodValidationPipe(x))` (also fixed `POST /tenants`).
 
-Deferred: media library + content-type builder screens, translation UI (admin locale tabs display-only; only EN content published), search backend, prod app-role split, Docker image build-test, and the **ops/governance track** (real pilot ministry, deploy target/sovereign infra, RISA TYPO3-clause). Open decisions still: pilot ministry + project name.
+- **Search (done):** public full-text search (RISA mandate). `GET /public/:slug/search?q=&locale=` — Postgres `to_tsvector`/`websearch_to_tsquery('simple')` over published title/summary/body, ranked, tenant-scoped. Runs the raw query inside `tenantTx` so GUCs are set and RLS applies (raw queries bypass the model extension). Site: header has a real no-JS GET search form (`SiteHeader searchAction`), results at `/[locale]/search`.
+
+Deferred: media library + content-type builder screens, translation UI (admin locale tabs display-only; only EN content published), prod app-role split, Docker image build-test, and the **ops/governance track** (real pilot ministry, deploy target/sovereign infra, RISA TYPO3-clause). Open decisions still: pilot ministry + project name.
 
 Run it: `pnpm install && pnpm db:up && pnpm --filter @govcms/schema build && pnpm db:generate && pnpm db:migrate && pnpm db:seed && pnpm --filter @govcms/core dev` → http://localhost:4001/api. Seeded login: `admin@govcms.local` / `changeme-now-please`.
 

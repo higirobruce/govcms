@@ -42,6 +42,7 @@ export default async function LocaleLayout({
           current: code === locale,
         }))}
         searchLabel={locale === "rw" ? "Shakisha" : "Search"}
+        searchAction={`/${locale}/search`}
       />
       <main id="main">{children}</main>
       <SiteFooter
