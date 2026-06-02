@@ -45,6 +45,47 @@ export class PublicService {
     return entries.map((e) => this.shape(e));
   }
 
+  /** Full-text search over published content (title/summary/body), tenant-scoped.
+   *  Runs the raw query inside tenantTx so the GUCs are set and RLS applies
+   *  (raw queries bypass the model extension). */
+  async search(slug: string, q: string, locale?: string) {
+    const query = q.trim();
+    if (!query) return [];
+    const tenantId = await this.tenantId(slug);
+    const rows = await withTenant({ tenantId }, () =>
+      this.prisma.tenantTx((tx) =>
+        tx.$queryRaw<
+          { id: string; type: string; slug: string; locale: string; title: string; summary: string }[]
+        >`
+          SELECT e."id",
+                 ct."key"  AS type,
+                 e."slug",
+                 e."locale",
+                 COALESCE(ev."data"->>'title', e."slug") AS title,
+                 COALESCE(ev."data"->>'summary', '')     AS summary
+          FROM "Entry" e
+          JOIN "EntryVersion" ev ON ev."id" = e."publishedVersionId"
+          JOIN "ContentType"  ct ON ct."id" = e."contentTypeId"
+          WHERE e."status" = 'PUBLISHED'
+            AND (${locale ?? null}::text IS NULL OR e."locale" = ${locale ?? null})
+            AND to_tsvector('simple',
+                  COALESCE(ev."data"->>'title','')   || ' ' ||
+                  COALESCE(ev."data"->>'summary','') || ' ' ||
+                  COALESCE(ev."data"->>'body',''))
+                @@ websearch_to_tsquery('simple', ${query})
+          ORDER BY ts_rank(
+                  to_tsvector('simple',
+                    COALESCE(ev."data"->>'title','')   || ' ' ||
+                    COALESCE(ev."data"->>'summary','') || ' ' ||
+                    COALESCE(ev."data"->>'body','')),
+                  websearch_to_tsquery('simple', ${query})) DESC
+          LIMIT 20
+        `,
+      ),
+    );
+    return rows;
+  }
+
   async one(slug: string, type: string, entrySlug: string, locale?: string) {
     const tenantId = await this.tenantId(slug);
     const entry = await withTenant({ tenantId }, () =>

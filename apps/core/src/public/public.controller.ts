@@ -11,6 +11,15 @@ export class PublicController {
     return this.pub.site(slug);
   }
 
+  @Get(":slug/search")
+  search(
+    @Param("slug") slug: string,
+    @Query("q") q = "",
+    @Query("locale") locale?: string,
+  ) {
+    return this.pub.search(slug, q, locale);
+  }
+
   @Get(":slug/entries")
   list(
     @Param("slug") slug: string,
