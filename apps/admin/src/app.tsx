@@ -8,6 +8,7 @@ import { ContentList } from "./screens/ContentList";
 import { Editor } from "./screens/Editor";
 import { ReviewQueue } from "./screens/ReviewQueue";
 import { Members } from "./screens/Members";
+import { ContentTypes } from "./screens/ContentTypes";
 
 export function App() {
   const { ready, user, tenantId } = useSession();
@@ -44,6 +45,7 @@ export function App() {
       <Route path="/workspaces" element={<Workspaces />} />
       <Route element={<AppShell />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/content/types" element={<ContentTypes />} />
         <Route path="/content/:type" element={<ContentList />} />
         <Route path="/entry/:id" element={<Editor />} />
         <Route path="/review" element={<ReviewQueue />} />

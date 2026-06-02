@@ -6,9 +6,10 @@ import { ContentTypesService } from "./content-types.service";
 import { EntriesService } from "./entries.service";
 import { EntriesController } from "./entries.controller";
 import { ContentController } from "./content.controller";
+import { ContentTypesController } from "./content-types.controller";
 
 @Module({
-  controllers: [EntriesController, ContentController],
+  controllers: [EntriesController, ContentController, ContentTypesController],
   providers: [
     EntriesService,
     ContentTypesService,

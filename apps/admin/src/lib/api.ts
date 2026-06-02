@@ -97,10 +97,37 @@ export interface Entry {
   currentVersion?: Version | null;
   contentType?: { key: string; name: string };
 }
+export type FieldType =
+  | "text"
+  | "textarea"
+  | "richtext"
+  | "number"
+  | "date"
+  | "boolean"
+  | "select"
+  | "image";
+export const FIELD_TYPES: FieldType[] = [
+  "text",
+  "textarea",
+  "richtext",
+  "number",
+  "date",
+  "boolean",
+  "select",
+  "image",
+];
+export interface FieldDef {
+  key: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  options?: string[];
+}
 export interface ContentType {
   id: string;
   key: string;
   name: string;
+  schema?: { fields: FieldDef[] };
 }
 export interface Member {
   userId: string;
@@ -132,6 +159,12 @@ export const api = {
   tenants: () => req<Tenant[]>("GET", "/tenants", undefined, { tenant: false }),
 
   contentTypes: () => req<ContentType[]>("GET", "/content-types"),
+  createContentType: (input: { key: string; name: string; fields: FieldDef[] }) =>
+    req<ContentType>("POST", "/content-types", input),
+  updateContentType: (id: string, input: { name?: string; fields?: FieldDef[] }) =>
+    req<ContentType>("PATCH", `/content-types/${id}`, input),
+  deleteContentType: (id: string) =>
+    req<{ ok: boolean }>("DELETE", `/content-types/${id}`),
   entries: (q: { type?: string; status?: Status } = {}) => {
     const p = new URLSearchParams();
     if (q.type) p.set("type", q.type);

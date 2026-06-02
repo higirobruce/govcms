@@ -56,6 +56,59 @@ export const CreateTenantInput = z.object({
 });
 export type CreateTenantInput = z.infer<typeof CreateTenantInput>;
 
+// ── Content types (the no-code field builder) ──────────────────────────────
+
+export const FieldType = z.enum([
+  "text",
+  "textarea",
+  "richtext",
+  "number",
+  "date",
+  "boolean",
+  "select",
+  "image",
+]);
+export type FieldType = z.infer<typeof FieldType>;
+
+export const FieldDef = z.object({
+  key: z
+    .string()
+    .regex(/^[a-z][a-z0-9_]*$/, "Lowercase, start with a letter, letters/digits/_."),
+  label: z.string().min(1).max(120),
+  type: FieldType,
+  required: z.boolean().default(false),
+  /** Choices for `select`. */
+  options: z.array(z.string()).optional(),
+});
+export type FieldDef = z.infer<typeof FieldDef>;
+
+/** The JSON stored in ContentType.schema. */
+export const ContentTypeSchema = z.object({ fields: z.array(FieldDef).default([]) });
+export type ContentTypeSchema = z.infer<typeof ContentTypeSchema>;
+
+const typeKey = z
+  .string()
+  .min(2)
+  .max(50)
+  .regex(/^[a-z][a-z0-9-]*$/, "Lowercase, start with a letter, letters/digits/-.");
+
+export const CreateContentTypeInput = z.object({
+  key: typeKey,
+  name: z.string().min(1).max(120),
+  fields: z.array(FieldDef).default([]),
+});
+export type CreateContentTypeInput = z.infer<typeof CreateContentTypeInput>;
+
+export const UpdateContentTypeInput = z
+  .object({
+    name: z.string().min(1).max(120).optional(),
+    fields: z.array(FieldDef).optional(),
+  })
+  .refine((v) => v.name !== undefined || v.fields !== undefined, {
+    message: "Provide name and/or fields.",
+  });
+export type UpdateContentTypeInput = z.infer<typeof UpdateContentTypeInput>;
+
 // ── Members / roles ────────────────────────────────────────────────────────
 
 export const AddMemberInput = z.object({
