@@ -49,7 +49,7 @@ plugins/          first-party plugins, built against plugin-api
 
 ## Status
 
-**Phase 4 done** (v0.1). Standalone repo at `~/Documents/development/govcms` (moved out of `aux`). Monorepo (pnpm + Turborepo). Ports (chosen to avoid the `aux` project): Postgres **5434**, Core API **4001**, admin **4003**, public site **4004**.
+**Phase 5 in progress** (v0.1). Standalone repo at `~/Documents/development/govcms` (moved out of `aux`). Monorepo (pnpm + Turborepo). Ports (chosen to avoid the `aux` project): Postgres **5434**, Core API **4001**, admin **4003**, public site **4004**.
 
 - **Phase 0:** Prisma data model + tenant/auth skeleton (register/login/JWT, `X-Tenant-Id`, `TenantGuard` + `RolesGuard`).
 - **Phase 1:** content engine in `apps/core/src/content` — entries CRUD, **immutable versioning** (`currentVersion` = working copy, `publishedVersion` = live, they diverge after editing a published entry), **workflow** state machine (role-gated), **audit log** (in-transaction). Verified end-to-end.
@@ -58,7 +58,11 @@ plugins/          first-party plugins, built against plugin-api
 
 - **Phase 4:** the public delivery layer. `apps/core/src/public` — anonymous, published-only read API keyed by tenant slug (`/public/:slug/...`). `packages/design-system` — the **RISA-conformant** government delivery system (Tailwind-free pure CSS; national tricolor band, Coat-of-Arms masthead placeholder, accessible focus, serif headings + Public Sans). `apps/site` — Next.js App Router site (port **4004**), SSG home (`/[locale]`, ISR 60s) + dynamic entry pages, EN/RW routes, mandated 404 + footer privacy link. Verified via `next build` + `next start` (NOT `next dev` — it wedges compiling in this sandbox; use a prod build to test). Run: `pnpm --filter @govcms/site build && pnpm --filter @govcms/site start`.
 
-Deferred: media library + content-type builder screens, translation UI (admin locale tabs display-only; only EN content published so far), role-denial paths (need members), search (RISA wants it — header has the affordance, no backend yet). Next: Phase 5 (migrate real ministry content, deploy, harden).
+- **Phase 5 (in progress — engineering hardening):** API security — `helmet` headers + `@nestjs/throttler` (120 req/min/IP) + env-driven CORS allowlist (`CORS_ORIGINS`). Deployment artifacts — multi-stage Dockerfiles (`apps/core`, `apps/site` w/ Next `output: standalone`), `.dockerignore`, `docker-compose.prod.yml` (postgres + core + site). **Postgres RLS drafted** in `apps/core/prisma/rls/` (policies reviewed, NOT applied — needs per-request tenant-context wiring via interactive transactions; see that README). Docker images are NOT build-tested in this env.
+
+- **Phase 5 RLS (wired + enforced):** Postgres row-level security is live. The app connects as a **non-superuser** role `govcms_app` (superusers bypass RLS) — runtime `DATABASE_URL` = `govcms_app`; migrations/seed run as the owner via the `db:migrate`/`db:seed` scripts. An `AsyncLocalStorage` tenant context (`prisma/tenant-context.ts`) feeds a `db` client extension + `tenantTx` helper that `set_config` the GUCs; context set by `TenantContextInterceptor`, `TenantGuard`, and `PublicService`. **Gotcha (keep fixed):** `withTenant` must await *inside* `tenantStore.run` or async_hooks loses the context and policies fail closed. Verified: fail-closed without context, scoped with it, cross-tenant → 0. See `apps/core/prisma/rls/README.md`. **Prod caveat:** the prod compose still connects as the superuser — split it (migrate as owner, run as `govcms_app`) before production.
+
+Deferred: media library + content-type builder screens, translation UI (admin locale tabs display-only; only EN content published), role-denial paths (need members), search backend, prod app-role split, Docker image build-test, and the **ops/governance track** (real pilot ministry, deploy target/sovereign infra, RISA TYPO3-clause). Open decisions still: pilot ministry + project name.
 
 Run it: `pnpm install && pnpm db:up && pnpm --filter @govcms/schema build && pnpm db:generate && pnpm db:migrate && pnpm db:seed && pnpm --filter @govcms/core dev` → http://localhost:4001/api. Seeded login: `admin@govcms.local` / `changeme-now-please`.
 

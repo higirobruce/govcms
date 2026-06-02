@@ -30,7 +30,7 @@ export class EntriesService {
   ) {}
 
   list(tenantId: string, q: ListEntriesQuery) {
-    return this.prisma.entry.findMany({
+    return this.prisma.db.entry.findMany({
       where: {
         tenantId,
         status: q.status,
@@ -43,7 +43,7 @@ export class EntriesService {
   }
 
   async getOrThrow(tenantId: string, id: string) {
-    const entry = await this.prisma.entry.findFirst({
+    const entry = await this.prisma.db.entry.findFirst({
       where: { id, tenantId },
       include: withVersions,
     });
@@ -56,7 +56,7 @@ export class EntriesService {
   async create(tenantId: string, actorId: string, input: CreateEntryInput) {
     const type = await this.types.findByKeyOrThrow(tenantId, input.contentTypeKey);
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      return await this.prisma.tenantTx(async (tx) => {
         const entry = await tx.entry.create({
           data: {
             tenantId,
@@ -106,7 +106,7 @@ export class EntriesService {
     input: UpdateEntryInput,
   ) {
     const entry = await this.getOrThrow(tenantId, id);
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.tenantTx(async (tx) => {
       const data: Prisma.EntryUpdateInput = {};
       if (input.slug !== undefined) data.slug = input.slug;
       if (input.data !== undefined) {
@@ -140,7 +140,7 @@ export class EntriesService {
 
   async listVersions(tenantId: string, id: string) {
     await this.getOrThrow(tenantId, id);
-    return this.prisma.entryVersion.findMany({
+    return this.prisma.db.entryVersion.findMany({
       where: { entryId: id },
       orderBy: { createdAt: "desc" },
       include: { author: { select: { id: true, name: true } } },
@@ -154,13 +154,13 @@ export class EntriesService {
     versionId: string,
   ) {
     await this.getOrThrow(tenantId, id);
-    const source = await this.prisma.entryVersion.findFirst({
+    const source = await this.prisma.db.entryVersion.findFirst({
       where: { id: versionId, entryId: id },
     });
     if (!source) {
       throw new NotFoundException("Version not found for this entry.");
     }
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.tenantTx(async (tx) => {
       const version = await tx.entryVersion.create({
         data: { entryId: id, data: source.data as Prisma.InputJsonValue, authorId: actorId },
       });
@@ -198,7 +198,7 @@ export class EntriesService {
       throw new BadRequestException("Nothing to publish — entry has no content.");
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.tenantTx(async (tx) => {
       const data: Prisma.EntryUpdateInput = { status: rule.to };
       if (action === "publish") {
         data.publishedVersion = { connect: { id: entry.currentVersionId! } };
