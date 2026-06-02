@@ -9,6 +9,9 @@ build/
 out/
 .turbo/
 
+# uploaded media (dev local-disk storage)
+uploads/
+
 # env & secrets
 .env
 .env.local

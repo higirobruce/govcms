@@ -2,6 +2,9 @@
 // tenant (X-Tenant-Id) on every request.
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:4001/api";
+/** Origin that serves uploaded media (the core, without the /api prefix). */
+const MEDIA_ORIGIN = BASE.replace(/\/api\/?$/, "");
+export const mediaUrl = (path: string) => `${MEDIA_ORIGIN}${path}`;
 
 const TOKEN_KEY = "govcms.token";
 const TENANT_KEY = "govcms.tenant";
@@ -129,6 +132,15 @@ export interface ContentType {
   name: string;
   schema?: { fields: FieldDef[] };
 }
+export interface Media {
+  id: string;
+  tenantId: string;
+  path: string;
+  mimeType: string;
+  altText: Record<string, string>;
+  meta?: { size?: number; name?: string };
+  createdAt: string;
+}
 export interface Member {
   userId: string;
   tenantId: string;
@@ -183,6 +195,24 @@ export const api = {
   transition: (id: string, action: WorkflowAction, note?: string) =>
     req<Entry>("POST", `/entries/${id}/${action}`, { note }),
   audit: (limit = 12) => req<AuditEntry[]>("GET", `/audit?limit=${limit}`),
+
+  media: () => req<Media[]>("GET", "/media"),
+  uploadMedia: async (file: File): Promise<Media> => {
+    const fd = new FormData();
+    fd.append("file", file);
+    const headers: Record<string, string> = {};
+    if (token) headers.authorization = `Bearer ${token}`;
+    if (tenantId) headers["x-tenant-id"] = tenantId;
+    const res = await fetch(`${BASE}/media`, { method: "POST", headers, body: fd });
+    if (!res.ok) {
+      const e = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new ApiError(res.status, e.message ?? res.statusText, e);
+    }
+    return res.json() as Promise<Media>;
+  },
+  setMediaAlt: (id: string, alt: Record<string, string>) =>
+    req<Media>("PATCH", `/media/${id}`, { alt }),
+  deleteMedia: (id: string) => req<{ ok: boolean }>("DELETE", `/media/${id}`),
 
   members: () => req<Member[]>("GET", "/members"),
   addMember: (input: { email: string; name?: string; role: Role }) =>
