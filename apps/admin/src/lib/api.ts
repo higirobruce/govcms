@@ -102,6 +102,12 @@ export interface ContentType {
   key: string;
   name: string;
 }
+export interface Member {
+  userId: string;
+  tenantId: string;
+  role: Role;
+  user: { id: string; name: string; email: string };
+}
 export interface AuditEntry {
   id: string;
   action: string;
@@ -144,4 +150,13 @@ export const api = {
   transition: (id: string, action: WorkflowAction, note?: string) =>
     req<Entry>("POST", `/entries/${id}/${action}`, { note }),
   audit: (limit = 12) => req<AuditEntry[]>("GET", `/audit?limit=${limit}`),
+
+  members: () => req<Member[]>("GET", "/members"),
+  addMember: (input: { email: string; name?: string; role: Role }) =>
+    req<{ membership: Member; tempPassword?: string }>("POST", "/members", input),
+  setMemberRole: (userId: string, role: Role) =>
+    req<Member>("PATCH", `/members/${userId}`, { role }),
+  removeMember: (userId: string) => req<{ ok: boolean }>("DELETE", `/members/${userId}`),
 };
+
+export const ROLES: Role[] = ["OWNER", "ADMIN", "EDITOR", "REVIEWER", "VIEWER"];

@@ -56,6 +56,18 @@ export const CreateTenantInput = z.object({
 });
 export type CreateTenantInput = z.infer<typeof CreateTenantInput>;
 
+// ── Members / roles ────────────────────────────────────────────────────────
+
+export const AddMemberInput = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(200).optional(),
+  role: Role.default("EDITOR"),
+});
+export type AddMemberInput = z.infer<typeof AddMemberInput>;
+
+export const SetRoleInput = z.object({ role: Role });
+export type SetRoleInput = z.infer<typeof SetRoleInput>;
+
 // ── Tenant context ─────────────────────────────────────────────────────────
 
 /** Resolved per request from the X-Tenant-Id header (subdomain later). */
