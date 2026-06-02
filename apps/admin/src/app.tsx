@@ -7,6 +7,7 @@ import { Dashboard } from "./screens/Dashboard";
 import { ContentList } from "./screens/ContentList";
 import { Editor } from "./screens/Editor";
 import { ReviewQueue } from "./screens/ReviewQueue";
+import { Members } from "./screens/Members";
 
 export function App() {
   const { ready, user, tenantId } = useSession();
@@ -46,6 +47,7 @@ export function App() {
         <Route path="/content/:type" element={<ContentList />} />
         <Route path="/entry/:id" element={<Editor />} />
         <Route path="/review" element={<ReviewQueue />} />
+        <Route path="/members" element={<Members />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>

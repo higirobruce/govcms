@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  UsePipes,
-} from "@nestjs/common";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { CreateTenantInput } from "@govcms/schema";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { TenantGuard } from "../common/tenant.guard";
@@ -30,8 +23,10 @@ export class TenantController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(CreateTenantInput))
-  create(@CurrentUser() user: AuthUser, @Body() input: CreateTenantInput) {
+  create(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(CreateTenantInput)) input: CreateTenantInput,
+  ) {
     return this.tenants.create(user.userId, input);
   }
 

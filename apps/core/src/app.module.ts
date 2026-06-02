@@ -8,6 +8,7 @@ import { AuthModule } from "./auth/auth.module";
 import { TenantModule } from "./tenant/tenant.module";
 import { TenantMiddleware } from "./tenant/tenant.middleware";
 import { ContentModule } from "./content/content.module";
+import { MembersModule } from "./members/members.module";
 import { PublicModule } from "./public/public.module";
 import { HealthController } from "./health/health.controller";
 
@@ -20,6 +21,7 @@ import { HealthController } from "./health/health.controller";
     AuthModule,
     TenantModule,
     ContentModule,
+    MembersModule,
     PublicModule,
   ],
   controllers: [HealthController],
