@@ -7,6 +7,7 @@ export {
   Hero,
   Breadcrumb,
   Prose,
+  Figure,
   CardGrid,
   LinkCard,
   type NavItem,

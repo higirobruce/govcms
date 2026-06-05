@@ -443,13 +443,11 @@ AuditLog       id, tenant_id, actor, action, target, before/after, ts</code></pr
       <div class="card">
         <h4 class="mt-0"><span class="tag">Deferred</span></h4>
         <ul style="margin-bottom:0;">
-          <li>User-defined content types (schema engine)</li>
           <li>Full plugin host</li>
           <li>Dedicated-instance deployment</li>
-          <li>Search</li>
           <li>The remaining two languages (fr, sw)</li>
         </ul>
-        <p class="caption" style="margin-top:var(--s-3);">Designed-for now, built after the pilot proves out.</p>
+        <p class="caption" style="margin-top:var(--s-3);">Designed-for now, built after the pilot proves out. <strong>User-defined content types</strong> and <strong>search</strong> were here — both now built (moved up while hardening).</p>
       </div>
     </div>
   </section>
@@ -466,7 +464,7 @@ AuditLog       id, tenant_id, actor, action, target, before/after, ts</code></pr
         <tr><td><span class="phase-num">2</span></td><td>Admin: editor + workflow (media deferred)</td><td><span class="tag tag-green">done</span></td></tr>
         <tr><td><span class="phase-num">3</span></td><td>Design system (admin-ui) — Claude Design handoff</td><td><span class="tag tag-green">done</span></td></tr>
         <tr><td><span class="phase-num">4</span></td><td>Site: SSG/ISR build consuming the API, 2 locales + gov design system</td><td><span class="tag tag-green">done</span></td></tr>
-        <tr><td><span class="phase-num">5</span></td><td>Harden (API security ✓, RLS wired + enforced ✓, deploy artifacts ✓) · migrate real content + deploy pending decisions</td><td><span class="tag">in progress</span></td></tr>
+        <tr><td><span class="phase-num">5</span></td><td>Harden: API security ✓, RLS wired + enforced ✓, deploy artifacts ✓, members &amp; roles ✓, search ✓, content-type builder ✓, dynamic-field editor ✓, media library ✓ · migrate real content + deploy pending pilot/infra decisions</td><td><span class="tag">in progress</span></td></tr>
       </tbody>
     </table>
   </section>
@@ -479,7 +477,7 @@ AuditLog       id, tenant_id, actor, action, target, before/after, ts</code></pr
     <table>
       <thead><tr><th>Question</th><th>Leaning</th></tr></thead>
       <tbody>
-        <tr><td>DB toolkit</td><td><strong>Prisma</strong> (most hireable, matches "boring tech") — vs Drizzle for lighter SQL control</td></tr>
+        <tr><td>DB toolkit <span class="tag tag-green">decided</span></td><td><strong>Prisma</strong> (most hireable, matches "boring tech"). <span class="muted">Migrate <code>package.json#prisma</code> seed config → <code>prisma.config.ts</code> for Prisma 7.</span></td></tr>
         <tr><td>Which ministry is the pilot?</td><td><span class="muted">TBD — shapes the content types</span></td></tr>
         <tr><td>Project name</td><td><span class="muted">TBD — <code>govcms</code> is the working directory</span></td></tr>
         <tr><td>Auth approach</td><td><span class="muted">TBD — session vs JWT; SSO/national ID integration later</span></td></tr>

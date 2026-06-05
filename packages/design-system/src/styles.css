@@ -105,6 +105,14 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-vis
 .prose ul, .prose ol { margin: 0 0 1.1em; padding-left: 1.4em; }
 .prose a { color: var(--link); }
 
+/* Figures — entry media */
+.gov-figure { margin: 24px 0; max-width: 70ch; }
+.gov-figure img {
+  display: block; width: 100%; height: auto;
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+}
+.gov-figure figcaption { margin-top: 8px; font-size: .875rem; color: var(--ink-3); }
+
 /* Cards / link lists */
 .gov-grid { display: grid; gap: 16px; }
 .gov-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
