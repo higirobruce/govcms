@@ -1,6 +1,17 @@
 // Server-side reader for the Core public delivery API. ISR: revalidate 60s.
 const API = process.env.API_URL ?? "http://localhost:4001/api";
 const SITE = process.env.SITE_SLUG ?? "pilot";
+// Origin that serves uploaded media. Dev/local: the Core API host (static
+// /uploads). Prod: an object-storage CDN — set ASSET_URL to that origin.
+const ASSET = process.env.ASSET_URL ?? API.replace(/\/api\/?$/, "");
+
+/** Resolve a stored media reference to a fetchable URL. Absolute URLs pass
+ *  through; root-relative /uploads paths get the asset origin prefixed. */
+export function assetUrl(src: string): string {
+  if (/^https?:\/\//i.test(src)) return src;
+  if (src.startsWith("/")) return `${ASSET}${src}`;
+  return src;
+}
 
 export const LOCALES = ["en", "rw"] as const;
 export type Locale = (typeof LOCALES)[number];
@@ -14,7 +25,16 @@ export interface PubEntry {
   title: string;
   summary: string;
   data: Record<string, unknown>;
+  images: EntryImage[];
   updatedAt: string;
+}
+export interface EntryImage {
+  key: string;
+  label: string;
+  /** Stored reference — pass through assetUrl() before use. */
+  src: string;
+  /** Locale-resolved alt text from the media library ("" = decorative). */
+  alt: string;
 }
 export interface PubSite {
   name: string;

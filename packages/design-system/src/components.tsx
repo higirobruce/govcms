@@ -168,6 +168,28 @@ export function Prose({ children }: { children: ReactNode }) {
   return <div className="prose">{children}</div>;
 }
 
+/**
+ * Accessible, responsive image. `alt` is required — pass "" only for purely
+ * decorative images. Alt text is authored in the media library (per-locale) and
+ * resolved by the delivery API; the component never invents it.
+ */
+export function Figure({
+  src,
+  alt,
+  caption,
+}: {
+  src: string;
+  alt: string;
+  caption?: ReactNode;
+}) {
+  return (
+    <figure className="gov-figure">
+      <img src={src} alt={alt} loading="lazy" decoding="async" />
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  );
+}
+
 export function CardGrid({ cols = 3, children }: { cols?: 2 | 3; children: ReactNode }) {
   return <div className={`gov-grid cols-${cols}`}>{children}</div>;
 }

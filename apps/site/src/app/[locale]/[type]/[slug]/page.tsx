@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Breadcrumb, Container, Prose } from "@govcms/design-system";
-import { getEntry } from "../../../../lib/api";
+import { Breadcrumb, Container, Figure, Prose } from "@govcms/design-system";
+import { assetUrl, getEntry } from "../../../../lib/api";
 
 export const revalidate = 60;
 
@@ -20,6 +20,8 @@ export default async function EntryPage({ params }: { params: Promise<Params> })
 
   const body = String(entry.data.body ?? "");
   const paras = body.split(/\n{2,}/).filter(Boolean);
+  const images = entry.images ?? [];
+  const [lead, ...rest] = images;
 
   return (
     <>
@@ -35,6 +37,7 @@ export default async function EntryPage({ params }: { params: Promise<Params> })
           {entry.summary && (
             <p style={{ fontSize: "1.1875rem", color: "var(--ink-2)", maxWidth: "60ch" }}>{entry.summary}</p>
           )}
+          {lead && <Figure src={assetUrl(lead.src)} alt={lead.alt} />}
           <Prose>
             {paras.length > 0 ? (
               paras.map((p, i) => <p key={i}>{p}</p>)
@@ -42,6 +45,9 @@ export default async function EntryPage({ params }: { params: Promise<Params> })
               <p className="muted">This page has no content yet.</p>
             )}
           </Prose>
+          {rest.map((img) => (
+            <Figure key={img.key} src={assetUrl(img.src)} alt={img.alt} />
+          ))}
         </article>
       </Container>
     </>
